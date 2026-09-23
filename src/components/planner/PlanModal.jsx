@@ -53,7 +53,12 @@ const steps = [
   },
 ]
 
-function PlanModal({ isOpen, onClose, onGenerate }) {
+function PlanModal({
+  isOpen,
+  onClose,
+  onGenerate,
+  isGenerating = false,
+}) {
   const [currentStep, setCurrentStep] = useState(0)
   const [form, setForm] = useState(initialForm)
 
@@ -89,19 +94,34 @@ function PlanModal({ isOpen, onClose, onGenerate }) {
   }
 
   const handleNext = () => {
+    if (isGenerating) {
+      return
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep((current) => current + 1)
       return
     }
 
     onGenerate(form)
-    onClose()
   }
 
   const handleBack = () => {
+    if (isGenerating) {
+      return
+    }
+
     if (currentStep > 0) {
       setCurrentStep((current) => current - 1)
     }
+  }
+
+  const handleClose = () => {
+    if (isGenerating) {
+      return
+    }
+
+    onClose()
   }
 
   const renderStep = () => {
@@ -162,8 +182,9 @@ function PlanModal({ isOpen, onClose, onGenerate }) {
 
           <button
             type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-dark"
+            onClick={handleClose}
+            disabled={isGenerating}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-dark disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Close"
           >
             <MaterialIcon>close</MaterialIcon>
@@ -212,7 +233,7 @@ function PlanModal({ isOpen, onClose, onGenerate }) {
           <button
             type="button"
             onClick={handleBack}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 || isGenerating}
             className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <MaterialIcon className="text-[19px]">
@@ -225,15 +246,28 @@ function PlanModal({ isOpen, onClose, onGenerate }) {
           <button
             type="button"
             onClick={handleNext}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
+            disabled={isGenerating}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {currentStep === steps.length - 1
-              ? "Generate My Flow"
-              : "Continue"}
+            {isGenerating ? (
+              <>
+                <MaterialIcon className="animate-spin text-[19px]">
+                  progress_activity
+                </MaterialIcon>
 
-            <MaterialIcon className="text-[19px]">
-              arrow_forward
-            </MaterialIcon>
+                Generating...
+              </>
+            ) : (
+              <>
+                {currentStep === steps.length - 1
+                  ? "Generate My Flow"
+                  : "Continue"}
+
+                <MaterialIcon className="text-[19px]">
+                  arrow_forward
+                </MaterialIcon>
+              </>
+            )}
           </button>
         </div>
       </div>

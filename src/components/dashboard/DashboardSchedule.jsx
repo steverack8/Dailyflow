@@ -1,88 +1,68 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import MaterialIcon from "../ui/MaterialIcon"
 
-const schedules = [
-  {
-    id: 1,
-    time: "05:00 - 06:00",
-    title: "Sholat Subuh & Persiapan Diri",
-    category: "Rutinitas Pagi • Ibadah",
-    status: "Terkunci",
-    type: "locked",
-  },
-  {
-    id: 2,
-    time: "06:00 - 07:30",
-    title: "Olahraga Pagi & Sarapan Berenergi",
-    category: "Sehat & Kebugaran",
-    status: "Fleksibel",
-    type: "flexible",
-  },
-  {
-    id: 3,
-    time: "08:00 - 12:00",
-    title: "Deep Work: Backend Architecture & Sprint Tasks",
-    category: "Fokus Kerja Utama (Sesi 1)",
-    status: "Inti",
-    type: "core",
-  },
-  {
-    id: 4,
-    time: "12:00 - 13:00",
-    title: "Sholat Dzuhur, Makan Siang & Break Santai",
-    category: "Istirahat & Mindful Break",
-    status: "Terkunci",
-    type: "locked",
-  },
-  {
-    id: 5,
-    time: "13:00 - 17:00",
-    title: "Kerja Kolaboratif & Code Review",
-    category: "Fokus Kerja Utama (Sesi 2)",
-    status: "Inti",
-    type: "core",
-  },
-  {
-    id: 6,
-    time: "17:30 - 18:30",
-    title: "Sore Fleksibel & Istirahat",
-    category: "Buffer Santai",
-    status: "Fleksibel",
-    type: "flexible",
-  },
-  {
-    id: 7,
-    time: "18:30 - 19:30",
-    title: "Sholat Maghrib & Makan Malam Keluarga",
-    category: "Ibadah & Personal",
-    status: "Terkunci",
-    type: "locked",
-  },
-  {
-    id: 8,
-    time: "19:30 - 20:30",
-    title: "Sholat Isya & Waktu Belajar / Baca Buku",
-    category: "Self Development",
-    status: "Terjadwal",
-    type: "scheduled",
-  },
-  {
-    id: 9,
-    time: "20:30 - 22:30",
-    title: "Wind Down / Santai Bebas Tanpa Layar Berat",
-    category: "Relaksasi Malam",
-    status: "Fleksibel",
-    type: "flexible",
-  },
-  {
-    id: 10,
-    time: "22:30 - 06:00",
-    title: "Tidur Malam Optimal (7.5 Jam)",
-    category: "Pemulihan Kognitif & Regenerasi",
-    status: "Terkunci",
-    type: "locked",
-  },
-]
+function getScheduleType(category) {
+  if (category === "work" || category === "study") {
+    return "core"
+  }
+
+  if (
+    category === "sleep" ||
+    category === "meal"
+  ) {
+    return "locked"
+  }
+
+  if (
+    category === "rest" ||
+    category === "hobby"
+  ) {
+    return "flexible"
+  }
+
+  return "scheduled"
+}
+
+function getScheduleStatus(category) {
+  if (
+    category === "sleep" ||
+    category === "meal"
+  ) {
+    return "Terkunci"
+  }
+
+  if (
+    category === "rest" ||
+    category === "hobby"
+  ) {
+    return "Fleksibel"
+  }
+
+  if (
+    category === "work" ||
+    category === "study"
+  ) {
+    return "Inti"
+  }
+
+  return "Terjadwal"
+}
+
+function getCategoryLabel(category) {
+  const labels = {
+    sleep: "Tidur",
+    work: "Kerja",
+    study: "Belajar",
+    exercise: "Olahraga",
+    meal: "Makan",
+    personal: "Personal",
+    hobby: "Hobi",
+    rest: "Istirahat",
+    other: "Lainnya",
+  }
+
+  return labels[category] || "Aktivitas"
+}
 
 function getScheduleStyles(type) {
   if (type === "core") {
@@ -116,10 +96,159 @@ function getScheduleStyles(type) {
   }
 }
 
-function DashboardSchedule({ form, onEdit }) {
+function timeToMinutes(time) {
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+    return null
+  }
+
+  const [hours, minutes] = time.split(":").map(Number)
+
+  return hours * 60 + minutes
+}
+
+function getDurationInMinutes(startTime, endTime) {
+  const start = timeToMinutes(startTime)
+  const end = timeToMinutes(endTime)
+
+  if (start === null || end === null) {
+    return 0
+  }
+
+  if (end >= start) {
+    return end - start
+  }
+
+  return 24 * 60 - start + end
+}
+
+function formatHours(minutes) {
+  return `${(minutes / 60).toFixed(1)} Jam`
+}
+
+function normalizeSchedule(planSchedule = []) {
+  return planSchedule.map((item, index) => {
+    const category = item.category || "other"
+
+    return {
+      id: item.id || index + 1,
+      time: `${item.startTime} - ${item.endTime}`,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      title: item.activity || "Untitled activity",
+      category:
+        item.description ||
+        getCategoryLabel(category),
+      status: getScheduleStatus(category),
+      type: getScheduleType(category),
+      categoryType: category,
+      description: item.description || "",
+    }
+  })
+}
+
+function calculateConflicts(schedules) {
+  const conflicts = []
+
+  for (let i = 0; i < schedules.length; i += 1) {
+    const current = schedules[i]
+
+    const currentStart = timeToMinutes(current.startTime)
+    let currentEnd = timeToMinutes(current.endTime)
+
+    if (currentStart === null || currentEnd === null) {
+      continue
+    }
+
+    if (currentEnd <= currentStart) {
+      currentEnd += 24 * 60
+    }
+
+    for (let j = i + 1; j < schedules.length; j += 1) {
+      const next = schedules[j]
+
+      let nextStart = timeToMinutes(next.startTime)
+      let nextEnd = timeToMinutes(next.endTime)
+
+      if (nextStart === null || nextEnd === null) {
+        continue
+      }
+
+      if (nextEnd <= nextStart) {
+        nextEnd += 24 * 60
+      }
+
+      if (nextStart < currentStart) {
+        nextStart += 24 * 60
+        nextEnd += 24 * 60
+      }
+
+      if (
+        currentStart < nextEnd &&
+        nextStart < currentEnd
+      ) {
+        conflicts.push([current.id, next.id])
+      }
+    }
+  }
+
+  return conflicts
+}
+
+function DashboardSchedule({ plan, form, onEdit }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
   const [aiRequest, setAiRequest] = useState("")
+
+  const schedules = useMemo(
+    () => normalizeSchedule(plan?.schedule || []),
+    [plan?.schedule]
+  )
+
+  const metrics = useMemo(() => {
+    const totalMinutes = schedules.reduce(
+      (total, schedule) =>
+        total +
+        getDurationInMinutes(
+          schedule.startTime,
+          schedule.endTime
+        ),
+      0
+    )
+
+    const coreMinutes = schedules
+      .filter((schedule) => schedule.type === "core")
+      .reduce(
+        (total, schedule) =>
+          total +
+          getDurationInMinutes(
+            schedule.startTime,
+            schedule.endTime
+          ),
+        0
+      )
+
+    const conflictPairs = calculateConflicts(schedules)
+
+    return {
+      totalMinutes,
+      coreMinutes,
+      flexibleMinutes: schedules
+        .filter((schedule) => schedule.type === "flexible")
+        .reduce(
+          (total, schedule) =>
+            total +
+            getDurationInMinutes(
+              schedule.startTime,
+              schedule.endTime
+            ),
+          0
+        ),
+      coreSessions: schedules.filter(
+        (schedule) => schedule.type === "core"
+      ).length,
+      conflicts: conflictPairs.length,
+    }
+  }, [schedules])
 
   const toggleSchedule = (id) => {
     setSelectedIds((current) =>
@@ -133,7 +262,9 @@ function DashboardSchedule({ form, onEdit }) {
     if (selectedIds.length === schedules.length) {
       setSelectedIds([])
     } else {
-      setSelectedIds(schedules.map((schedule) => schedule.id))
+      setSelectedIds(
+        schedules.map((schedule) => schedule.id)
+      )
     }
   }
 
@@ -175,8 +306,11 @@ function DashboardSchedule({ form, onEdit }) {
             </p>
 
             <p className="mt-0.5 text-xs leading-[18px] text-slate-500">
-              Algoritma cerdas DailyFlow telah menyusun 10 blok waktu
-              terstruktur bebas tumpang tindih.
+              DailyFlow telah menyusun{" "}
+              <span className="font-medium text-slate-700">
+                {schedules.length} blok waktu
+              </span>{" "}
+              berdasarkan data dan preferensi Anda.
             </p>
           </div>
         </div>
@@ -199,19 +333,8 @@ function DashboardSchedule({ form, onEdit }) {
           </h1>
 
           <p className="mt-1 text-sm leading-[22px] text-slate-500">
-            Berdasarkan profil{" "}
-            <span className="font-medium text-slate-900">
-              Software Engineer
-            </span>
-            , target tidur{" "}
-            <span className="font-medium text-slate-900">
-              7.5 jam
-            </span>
-            , dan{" "}
-            <span className="font-medium text-slate-900">
-              5 waktu ibadah
-            </span>{" "}
-            otomatis terintegrasi.
+            {plan?.summary ||
+              "Jadwal harian yang dibuat berdasarkan profil, rutinitas, dan prioritas Anda."}
           </p>
         </div>
 
@@ -244,32 +367,36 @@ function DashboardSchedule({ form, onEdit }) {
       {/* Metrics */}
       <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          label="Total Waktu Terkunci"
-          value="17.0 Jam"
-          description="Kerja 8 Jam, Tidur 7.5 Jam, Ibadah 1.5 Jam"
-          icon="lock_clock"
+          label="Total Waktu Terjadwal"
+          value={formatHours(metrics.totalMinutes)}
+          description={`${schedules.length} blok dari jadwal yang dibuat`}
+          icon="schedule"
         />
 
         <MetricCard
-          label="Buffer & Santai Bebas"
-          value="7.0 Jam"
-          description="Waktu fleksibel, terhindar dari burnout"
+          label="Waktu Fleksibel"
+          value={formatHours(metrics.flexibleMinutes)}
+          description="Waktu istirahat, hobi, dan aktivitas fleksibel"
           icon="self_improvement"
         />
 
         <MetricCard
           label="Sesi Fokus Inti"
-          value="2 Sesi"
-          description="Deep Work Pagi & Kolaboratif Sore"
+          value={`${metrics.coreSessions} Sesi`}
+          description={`${formatHours(metrics.coreMinutes)} untuk kerja atau belajar`}
           icon="psychology"
         />
 
         <MetricCard
           label="Status Konflik"
-          value="0 Tabrakan"
-          description="Semua 10 blok jadwal berjalan harmonis"
-          icon="verified"
-          highlight
+          value={`${metrics.conflicts} Tabrakan`}
+          description={
+            metrics.conflicts === 0
+              ? `Semua ${schedules.length} blok tidak bertabrakan`
+              : `${metrics.conflicts} pasangan jadwal perlu diperiksa`
+          }
+          icon={metrics.conflicts === 0 ? "verified" : "warning"}
+          highlight={metrics.conflicts === 0}
         />
       </section>
 
@@ -293,7 +420,8 @@ function DashboardSchedule({ form, onEdit }) {
               onClick={selectAll}
               className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
             >
-              {selectedIds.length === schedules.length
+              {selectedIds.length === schedules.length &&
+              schedules.length > 0
                 ? "Batalkan Semua"
                 : "Pilih Semua"}
             </button>
@@ -329,21 +457,37 @@ function DashboardSchedule({ form, onEdit }) {
           )}
 
           <div className="space-y-2">
-            {schedules.map((schedule) => (
-              <ScheduleCard
-                key={schedule.id}
-                schedule={schedule}
-                selected={selectedIds.includes(schedule.id)}
-                onSelect={() => toggleSchedule(schedule.id)}
-                onEdit={onEdit}
-              />
-            ))}
+            {schedules.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                <MaterialIcon className="text-[28px] text-slate-400">
+                  event_busy
+                </MaterialIcon>
+
+                <p className="mt-3 text-sm font-medium text-slate-700">
+                  Belum ada jadwal
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Generate plan terlebih dahulu untuk melihat rutinitas Anda.
+                </p>
+              </div>
+            ) : (
+              schedules.map((schedule) => (
+                <ScheduleCard
+                  key={schedule.id}
+                  schedule={schedule}
+                  selected={selectedIds.includes(schedule.id)}
+                  onSelect={() => toggleSchedule(schedule.id)}
+                  onEdit={onEdit}
+                />
+              ))
+            )}
           </div>
         </section>
 
         {/* Sidebar */}
         <aside className="min-w-0 space-y-6 lg:col-span-4">
-          <SyncCard />
+          <SyncCard scheduleCount={schedules.length} />
           <TipsCard />
         </aside>
       </div>
@@ -554,13 +698,13 @@ function AiRevisionModal({
             id="ai-request"
             value={value}
             onChange={(event) => onChange(event.target.value)}
-            placeholder="Contoh: Saya agak susah dengan jadwal ini. Saya ingin lebih fokus belajar di malam hari dan mengurangi aktivitas yang kurang penting."
+            placeholder="Contoh: Saya ingin lebih fokus belajar di malam hari dan mengurangi aktivitas yang kurang penting."
             rows={5}
             className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
 
           <p className="mt-2 text-xs leading-[18px] text-slate-500">
-            Dailyflow akan mempertimbangkan blok yang dipilih,
+            DailyFlow akan mempertimbangkan blok yang dipilih,
             jadwal lainnya, serta batasan rutinitas Anda.
           </p>
         </div>
@@ -592,7 +736,7 @@ function AiRevisionModal({
   )
 }
 
-function SyncCard() {
+function SyncCard({ scheduleCount }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6">
       <div className="mb-4 flex items-center gap-3">
@@ -616,11 +760,11 @@ function SyncCard() {
       <div className="mb-4 space-y-2 rounded-lg bg-slate-50 p-4">
         <div className="flex items-center justify-between gap-4">
           <span className="text-xs text-slate-500">
-            Akun Terhubung:
+            Blok Jadwal:
           </span>
 
           <span className="text-xs font-medium text-slate-900">
-            alex.tech@gmail.com
+            {scheduleCount} blok
           </span>
         </div>
 
@@ -636,7 +780,7 @@ function SyncCard() {
       </div>
 
       <div className="mb-4 space-y-3">
-        <SyncCheck text="10 blok jadwal siap diekspor" />
+        <SyncCheck text={`${scheduleCount} blok jadwal siap diekspor`} />
         <SyncCheck text="Peringatan notifikasi 10 menit sebelumnya" />
         <SyncCheck text="Deteksi jeda buffer aktif" />
       </div>
@@ -693,18 +837,18 @@ function TipsCard() {
 
       <ul className="space-y-4 text-xs leading-[18px] text-slate-500">
         <Tip
-          title="Lindungi Sesi Pagi:"
-          text="Blok 08:00 - 12:00 memiliki energi kognitif tertinggi. Hindari membuka email atau pesan slack di 30 menit awal."
+          title="Lindungi Sesi Fokus:"
+          text="Gunakan blok kerja atau belajar sebagai waktu fokus utama dan minimalkan gangguan."
         />
 
         <Tip
-          title="Ritme Sirkadian:"
-          text="Jadwal tidur 22:30 memastikan Anda mendapat siklus tidur delta yang cukup sebelum Subuh tiba."
+          title="Jaga Ritme:"
+          text="Pertahankan waktu tidur, makan, dan istirahat agar jadwal tetap realistis."
         />
 
         <Tip
-          title="Buffer Dinamis:"
-          text="Jika meeting melar di siang hari, manfaatkan jam 17:30 - 18:30 tanpa menggeser waktu istirahat malam."
+          title="Manfaatkan Buffer:"
+          text="Gunakan waktu fleksibel untuk menyesuaikan aktivitas tanpa mengganggu blok penting lainnya."
         />
       </ul>
     </div>
