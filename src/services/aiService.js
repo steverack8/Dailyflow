@@ -9,7 +9,9 @@ async function requestAI(endpoint, prompt) {
     }),
   })
 
-  const data = await response.json().catch(() => null)
+  const data = await response
+    .json()
+    .catch(() => null)
 
   if (!response.ok) {
     throw new Error(
@@ -57,9 +59,22 @@ function parseAIResponse(result) {
   }
 }
 
-export async function generateDailyPlan(prompt) {
+export async function generateDailyPlan(
+  prompt
+) {
   const result = await requestAI(
     "/.netlify/functions/generate-plan",
+    prompt
+  )
+
+  return parseAIResponse(result)
+}
+
+export async function analyzeDailyPlan(
+  prompt
+) {
+  const result = await requestAI(
+    "/.netlify/functions/analyze-plan",
     prompt
   )
 

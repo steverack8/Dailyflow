@@ -5,7 +5,6 @@ import Hero from "../components/landing/Hero"
 import HowItWorks from "../components/landing/HowItWorks"
 import LifeDimensions from "../components/landing/LifeDimensions"
 import SmartScheduling from "../components/landing/SmartScheduling"
-import CalendarSync from "../components/landing/CalendarSync"
 import DynamicPlanning from "../components/landing/DynamicPlanning"
 
 function LandingPage() {
@@ -18,7 +17,6 @@ function LandingPage() {
         <HowItWorks />
         <LifeDimensions />
         <SmartScheduling />
-        <CalendarSync />
         <DynamicPlanning />
       </main>
 
