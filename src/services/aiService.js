@@ -1,9 +1,5 @@
-export async function generateDailyPlan(prompt) {
-  if (!prompt || typeof prompt !== "string") {
-    throw new Error("Prompt is required.")
-  }
-
-  const response = await fetch("http://localhost:3001/api/generate-plan", {
+async function requestAI(endpoint, prompt) {
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -17,13 +13,55 @@ export async function generateDailyPlan(prompt) {
 
   if (!response.ok) {
     throw new Error(
-      data?.message || "Failed to generate daily plan."
+      data?.error ||
+        data?.message ||
+        "Gagal menghubungi layanan AI."
     )
   }
 
-  if (!data?.success || !data?.plan) {
-    throw new Error("Invalid plan response from server.")
+  if (!data?.result) {
+    throw new Error(
+      "AI tidak mengembalikan hasil."
+    )
   }
 
-  return data.plan
+  return data.result
+}
+
+function parseAIResponse(result) {
+  if (
+    typeof result === "object" &&
+    result !== null
+  ) {
+    return result
+  }
+
+  if (typeof result !== "string") {
+    throw new Error(
+      "Format respons AI tidak valid."
+    )
+  }
+
+  const cleanedResult = result
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim()
+
+  try {
+    return JSON.parse(cleanedResult)
+  } catch {
+    throw new Error(
+      "AI mengembalikan format data yang tidak valid."
+    )
+  }
+}
+
+export async function generateDailyPlan(prompt) {
+  const result = await requestAI(
+    "/.netlify/functions/generate-plan",
+    prompt
+  )
+
+  return parseAIResponse(result)
 }

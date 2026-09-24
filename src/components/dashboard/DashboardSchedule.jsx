@@ -1,51 +1,41 @@
 import { useMemo, useState } from "react"
+
 import MaterialIcon from "../ui/MaterialIcon"
 
-function getScheduleType(category) {
-  if (category === "work" || category === "study") {
-    return "core"
+function timeToMinutes(time) {
+  if (!time || !time.includes(":")) {
+    return 0
   }
 
-  if (
-    category === "sleep" ||
-    category === "meal"
-  ) {
-    return "locked"
-  }
+  const [hours, minutes] = time.split(":").map(Number)
 
-  if (
-    category === "rest" ||
-    category === "hobby"
-  ) {
-    return "flexible"
-  }
-
-  return "scheduled"
+  return hours * 60 + minutes
 }
 
-function getScheduleStatus(category) {
-  if (
-    category === "sleep" ||
-    category === "meal"
-  ) {
-    return "Terkunci"
+function getDurationInMinutes(startTime, endTime) {
+  const start = timeToMinutes(startTime)
+  const end = timeToMinutes(endTime)
+
+  if (end >= start) {
+    return end - start
   }
 
-  if (
-    category === "rest" ||
-    category === "hobby"
-  ) {
-    return "Fleksibel"
+  return 24 * 60 - start + end
+}
+
+function formatHours(minutes) {
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  if (hours === 0) {
+    return `${remainingMinutes}m`
   }
 
-  if (
-    category === "work" ||
-    category === "study"
-  ) {
-    return "Inti"
+  if (remainingMinutes === 0) {
+    return `${hours}j`
   }
 
-  return "Terjadwal"
+  return `${hours}j ${remainingMinutes}m`
 }
 
 function getCategoryLabel(category) {
@@ -61,132 +51,144 @@ function getCategoryLabel(category) {
     other: "Lainnya",
   }
 
-  return labels[category] || "Aktivitas"
+  return labels[category] || "Lainnya"
 }
 
-function getScheduleStyles(type) {
-  if (type === "core") {
-    return {
-      time: "text-blue-600",
-      line: "bg-blue-600",
-      badge: "bg-blue-600 text-white",
-    }
+function getScheduleType(category) {
+  if (
+    ["work", "study", "sleep"].includes(
+      category
+    )
+  ) {
+    return "core"
   }
 
-  if (type === "flexible") {
-    return {
-      time: "text-slate-500",
-      line: "bg-slate-300",
-      badge: "bg-slate-100 text-slate-600",
-    }
+  if (
+    ["meal", "exercise", "personal"].includes(
+      category
+    )
+  ) {
+    return "scheduled"
   }
 
-  if (type === "scheduled") {
-    return {
-      time: "text-slate-500",
-      line: "bg-slate-300",
-      badge: "bg-slate-100 text-slate-600",
-    }
-  }
-
-  return {
-    time: "text-slate-600",
-    line: "bg-slate-400",
-    badge: "bg-slate-200 text-slate-600",
-  }
+  return "flexible"
 }
 
-function timeToMinutes(time) {
-  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
-    return null
+function getScheduleStyles(category) {
+  const styles = {
+    sleep: {
+      dot: "bg-indigo-500",
+      badge: "bg-indigo-50 text-indigo-700",
+    },
+    work: {
+      dot: "bg-blue-600",
+      badge: "bg-blue-50 text-blue-700",
+    },
+    study: {
+      dot: "bg-violet-600",
+      badge: "bg-violet-50 text-violet-700",
+    },
+    exercise: {
+      dot: "bg-emerald-600",
+      badge: "bg-emerald-50 text-emerald-700",
+    },
+    meal: {
+      dot: "bg-orange-500",
+      badge: "bg-orange-50 text-orange-700",
+    },
+    personal: {
+      dot: "bg-cyan-600",
+      badge: "bg-cyan-50 text-cyan-700",
+    },
+    hobby: {
+      dot: "bg-pink-500",
+      badge: "bg-pink-50 text-pink-700",
+    },
+    rest: {
+      dot: "bg-slate-400",
+      badge: "bg-slate-100 text-slate-700",
+    },
+    other: {
+      dot: "bg-slate-500",
+      badge: "bg-slate-100 text-slate-700",
+    },
   }
 
-  const [hours, minutes] = time.split(":").map(Number)
-
-  return hours * 60 + minutes
+  return styles[category] || styles.other
 }
 
-function getDurationInMinutes(startTime, endTime) {
-  const start = timeToMinutes(startTime)
-  const end = timeToMinutes(endTime)
-
-  if (start === null || end === null) {
-    return 0
+function normalizeSchedule(schedule) {
+  if (!Array.isArray(schedule)) {
+    return []
   }
 
-  if (end >= start) {
-    return end - start
-  }
-
-  return 24 * 60 - start + end
-}
-
-function formatHours(minutes) {
-  return `${(minutes / 60).toFixed(1)} Jam`
-}
-
-function normalizeSchedule(planSchedule = []) {
-  return planSchedule.map((item, index) => {
+  return schedule.map((item, index) => {
     const category = item.category || "other"
 
     return {
-      id: item.id || index + 1,
-      time: `${item.startTime} - ${item.endTime}`,
-      startTime: item.startTime,
-      endTime: item.endTime,
-      title: item.activity || "Untitled activity",
-      category:
+      ...item,
+      id: item.id || `schedule-${index}`,
+      startTime:
+        item.startTime ||
+        item.start ||
+        item.time?.split("-")?.[0]?.trim() ||
+        "00:00",
+      endTime:
+        item.endTime ||
+        item.end ||
+        item.time?.split("-")?.[1]?.trim() ||
+        "00:00",
+      title:
+        item.title ||
+        item.activity ||
+        "Aktivitas",
+      category,
+      type:
+        item.type ||
+        getScheduleType(category),
+      description:
         item.description ||
         getCategoryLabel(category),
-      status: getScheduleStatus(category),
-      type: getScheduleType(category),
-      categoryType: category,
-      description: item.description || "",
     }
   })
 }
 
-function calculateConflicts(schedules) {
-  const conflicts = []
+function calculateConflicts(schedule) {
+  const conflicts = new Set()
 
-  for (let i = 0; i < schedules.length; i += 1) {
-    const current = schedules[i]
+  for (
+    let index = 0;
+    index < schedule.length;
+    index += 1
+  ) {
+    const current = schedule[index]
 
-    const currentStart = timeToMinutes(current.startTime)
-    let currentEnd = timeToMinutes(current.endTime)
+    for (
+      let nextIndex = index + 1;
+      nextIndex < schedule.length;
+      nextIndex += 1
+    ) {
+      const next = schedule[nextIndex]
 
-    if (currentStart === null || currentEnd === null) {
-      continue
-    }
-
-    if (currentEnd <= currentStart) {
-      currentEnd += 24 * 60
-    }
-
-    for (let j = i + 1; j < schedules.length; j += 1) {
-      const next = schedules[j]
-
-      let nextStart = timeToMinutes(next.startTime)
-      let nextEnd = timeToMinutes(next.endTime)
-
-      if (nextStart === null || nextEnd === null) {
-        continue
-      }
-
-      if (nextEnd <= nextStart) {
-        nextEnd += 24 * 60
-      }
-
-      if (nextStart < currentStart) {
-        nextStart += 24 * 60
-        nextEnd += 24 * 60
-      }
+      const currentStart = timeToMinutes(
+        current.startTime
+      )
+      const currentEnd = timeToMinutes(
+        current.endTime
+      )
+      const nextStart = timeToMinutes(
+        next.startTime
+      )
+      const nextEnd = timeToMinutes(
+        next.endTime
+      )
 
       if (
         currentStart < nextEnd &&
         nextStart < currentEnd
       ) {
-        conflicts.push([current.id, next.id])
+        conflicts.add(current.id)
+        conflicts.add(next.id)
       }
     }
   }
@@ -194,541 +196,91 @@ function calculateConflicts(schedules) {
   return conflicts
 }
 
-function DashboardSchedule({ plan, form, onEdit }) {
-  const [selectedIds, setSelectedIds] = useState([])
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
-  const [aiRequest, setAiRequest] = useState("")
-
-  const schedules = useMemo(
-    () => normalizeSchedule(plan?.schedule || []),
-    [plan?.schedule]
-  )
-
-  const metrics = useMemo(() => {
-    const totalMinutes = schedules.reduce(
-      (total, schedule) =>
-        total +
-        getDurationInMinutes(
-          schedule.startTime,
-          schedule.endTime
-        ),
-      0
-    )
-
-    const coreMinutes = schedules
-      .filter((schedule) => schedule.type === "core")
-      .reduce(
-        (total, schedule) =>
-          total +
-          getDurationInMinutes(
-            schedule.startTime,
-            schedule.endTime
-          ),
-        0
-      )
-
-    const conflictPairs = calculateConflicts(schedules)
-
-    return {
-      totalMinutes,
-      coreMinutes,
-      flexibleMinutes: schedules
-        .filter((schedule) => schedule.type === "flexible")
-        .reduce(
-          (total, schedule) =>
-            total +
-            getDurationInMinutes(
-              schedule.startTime,
-              schedule.endTime
-            ),
-          0
-        ),
-      coreSessions: schedules.filter(
-        (schedule) => schedule.type === "core"
-      ).length,
-      conflicts: conflictPairs.length,
-    }
-  }, [schedules])
-
-  const toggleSchedule = (id) => {
-    setSelectedIds((current) =>
-      current.includes(id)
-        ? current.filter((selectedId) => selectedId !== id)
-        : [...current, id]
-    )
-  }
-
-  const selectAll = () => {
-    if (selectedIds.length === schedules.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(
-        schedules.map((schedule) => schedule.id)
-      )
-    }
-  }
-
-  const selectedSchedules = schedules.filter((schedule) =>
-    selectedIds.includes(schedule.id)
-  )
-
-  const handleAiRevision = () => {
-    if (selectedSchedules.length === 0) return
-
-    setIsAiModalOpen(true)
-  }
-
-  const handleGenerateRevision = () => {
-    const promptData = {
-      selectedSchedules,
-      userRequest: aiRequest,
-      currentSchedule: schedules,
-      userForm: form,
-    }
-
-    console.log("AI Revision Prompt Data:", promptData)
-  }
-
-  return (
-    <div className="w-full">
-      {/* Success notification */}
-      <div className="mb-8 flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-            <MaterialIcon className="text-[22px]">
-              check_circle
-            </MaterialIcon>
-          </div>
-
-          <div>
-            <p className="text-base font-semibold leading-6 text-slate-900">
-              Rutinitas Harian Berhasil Dibuat!
-            </p>
-
-            <p className="mt-0.5 text-xs leading-[18px] text-slate-500">
-              DailyFlow telah menyusun{" "}
-              <span className="font-medium text-slate-700">
-                {schedules.length} blok waktu
-              </span>{" "}
-              berdasarkan data dan preferensi Anda.
-            </p>
-          </div>
-        </div>
-
-        <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-          Tersimpan Otomatis
-        </span>
-      </div>
-
-      {/* Page heading */}
-      <div className="mb-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-        <div className="max-w-2xl">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-            <span className="h-2 w-2 rounded-full bg-blue-600" />
-            RUTINITAS TERJADWAL
-          </div>
-
-          <h1 className="text-2xl font-semibold leading-10 tracking-tight text-slate-900">
-            Jadwal Rutinitas Harian (Generated Flow)
-          </h1>
-
-          <p className="mt-1 text-sm leading-[22px] text-slate-500">
-            {plan?.summary ||
-              "Jadwal harian yang dibuat berdasarkan profil, rutinitas, dan prioritas Anda."}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            <MaterialIcon className="text-[18px] text-slate-500">
-              refresh
-            </MaterialIcon>
-
-            Atur Ulang / Re-generate
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            <MaterialIcon className="text-[18px]">
-              sync_alt
-            </MaterialIcon>
-
-            Sinkronkan ke Google Calendar →
-          </button>
-        </div>
-      </div>
-
-      {/* Metrics */}
-      <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          label="Total Waktu Terjadwal"
-          value={formatHours(metrics.totalMinutes)}
-          description={`${schedules.length} blok dari jadwal yang dibuat`}
-          icon="schedule"
-        />
-
-        <MetricCard
-          label="Waktu Fleksibel"
-          value={formatHours(metrics.flexibleMinutes)}
-          description="Waktu istirahat, hobi, dan aktivitas fleksibel"
-          icon="self_improvement"
-        />
-
-        <MetricCard
-          label="Sesi Fokus Inti"
-          value={`${metrics.coreSessions} Sesi`}
-          description={`${formatHours(metrics.coreMinutes)} untuk kerja atau belajar`}
-          icon="psychology"
-        />
-
-        <MetricCard
-          label="Status Konflik"
-          value={`${metrics.conflicts} Tabrakan`}
-          description={
-            metrics.conflicts === 0
-              ? `Semua ${schedules.length} blok tidak bertabrakan`
-              : `${metrics.conflicts} pasangan jadwal perlu diperiksa`
-          }
-          icon={metrics.conflicts === 0 ? "verified" : "warning"}
-          highlight={metrics.conflicts === 0}
-        />
-      </section>
-
-      {/* Main content */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Timeline */}
-        <section className="min-w-0 lg:col-span-8">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MaterialIcon className="text-[20px] text-slate-500">
-                view_timeline
-              </MaterialIcon>
-
-              <h2 className="text-base font-semibold leading-6 text-slate-900">
-                Kronologi Rutinitas Harian
-              </h2>
-            </div>
-
-            <button
-              type="button"
-              onClick={selectAll}
-              className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
-            >
-              {selectedIds.length === schedules.length &&
-              schedules.length > 0
-                ? "Batalkan Semua"
-                : "Pilih Semua"}
-            </button>
-          </div>
-
-          {/* Selection action bar */}
-          {selectedIds.length > 0 && (
-            <div className="mb-3 flex flex-col justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white">
-                  <MaterialIcon className="text-[16px]">
-                    check
-                  </MaterialIcon>
-                </div>
-
-                <span className="text-sm font-medium text-slate-800">
-                  {selectedIds.length} blok jadwal dipilih
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleAiRevision}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-              >
-                <MaterialIcon className="text-[18px]">
-                  auto_awesome
-                </MaterialIcon>
-
-                Edit dengan AI
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {schedules.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-                <MaterialIcon className="text-[28px] text-slate-400">
-                  event_busy
-                </MaterialIcon>
-
-                <p className="mt-3 text-sm font-medium text-slate-700">
-                  Belum ada jadwal
-                </p>
-
-                <p className="mt-1 text-xs text-slate-500">
-                  Generate plan terlebih dahulu untuk melihat rutinitas Anda.
-                </p>
-              </div>
-            ) : (
-              schedules.map((schedule) => (
-                <ScheduleCard
-                  key={schedule.id}
-                  schedule={schedule}
-                  selected={selectedIds.includes(schedule.id)}
-                  onSelect={() => toggleSchedule(schedule.id)}
-                  onEdit={onEdit}
-                />
-              ))
-            )}
-          </div>
-        </section>
-
-        {/* Sidebar */}
-        <aside className="min-w-0 space-y-6 lg:col-span-4">
-          <SyncCard scheduleCount={schedules.length} />
-          <TipsCard />
-        </aside>
-      </div>
-
-      {/* AI Revision Modal */}
-      {isAiModalOpen && (
-        <AiRevisionModal
-          selectedSchedules={selectedSchedules}
-          value={aiRequest}
-          onChange={setAiRequest}
-          onClose={() => setIsAiModalOpen(false)}
-          onGenerate={handleGenerateRevision}
-        />
-      )}
-    </div>
-  )
-}
-
-function MetricCard({
-  label,
-  value,
-  description,
-  icon,
-  highlight = false,
-}) {
-  return (
-    <div className="flex min-h-[156px] flex-col justify-between rounded-xl border border-slate-200 bg-white p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          {label}
-        </span>
-
-        <MaterialIcon className="shrink-0 text-[20px] text-blue-600">
-          {icon}
-        </MaterialIcon>
-      </div>
-
-      <div>
-        <span
-          className={`text-2xl font-semibold leading-10 tracking-tight ${
-            highlight ? "text-blue-600" : "text-slate-900"
-          }`}
-        >
-          {value}
-        </span>
-
-        <p className="mt-1 text-xs leading-[18px] text-slate-500">
-          {description}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-function ScheduleCard({
+function validateScheduleTime(
+  startTime,
+  endTime,
   schedule,
-  selected,
-  onSelect,
-  onEdit,
+  currentId = null
+) {
+  if (!startTime || !endTime) {
+    return "Waktu mulai dan waktu selesai wajib diisi."
+  }
+
+  const start = timeToMinutes(startTime)
+  const end = timeToMinutes(endTime)
+
+  if (start >= end) {
+    return "Waktu selesai harus lebih dari waktu mulai."
+  }
+
+  const hasOverlap = schedule.some((item) => {
+    if (item.id === currentId) {
+      return false
+    }
+
+    const itemStart = timeToMinutes(
+      item.startTime
+    )
+    const itemEnd = timeToMinutes(
+      item.endTime
+    )
+
+    return (
+      start < itemEnd &&
+      itemStart < end
+    )
+  })
+
+  if (hasOverlap) {
+    return "Waktu aktivitas bertabrakan dengan aktivitas lain."
+  }
+
+  return ""
+}
+
+function DeleteConfirmationModal({
+  isOpen,
+  title,
+  description,
+  onCancel,
+  onConfirm,
 }) {
-  const styles = getScheduleStyles(schedule.type)
+  if (!isOpen) {
+    return null
+  }
 
   return (
-    <div
-      className={`flex flex-col justify-between gap-3 rounded-xl border bg-white p-4 transition-all sm:flex-row sm:items-center ${
-        selected
-          ? "border-blue-500 bg-blue-50/40 ring-1 ring-blue-500"
-          : "border-slate-200 hover:bg-slate-50"
-      }`}
-    >
-      <div className="flex min-w-0 items-start gap-3 sm:items-center">
-        <label className="flex h-10 w-6 shrink-0 cursor-pointer items-center justify-center">
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={onSelect}
-            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-          />
-        </label>
-
-        <div
-          className={`w-24 shrink-0 text-sm font-medium ${styles.time}`}
-        >
-          {schedule.time}
-        </div>
-
-        <div
-          className={`h-10 w-1.5 shrink-0 rounded-full ${styles.line}`}
-        />
-
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-5 text-slate-900">
-            {schedule.title}
-          </p>
-
-          <p className="mt-0.5 text-xs leading-[18px] text-slate-500">
-            {schedule.category}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1 self-end sm:self-auto">
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${styles.badge}`}
-        >
-          {schedule.status}
-        </span>
-
-        <button
-          type="button"
-          title="Edit blok jadwal"
-          aria-label="Edit jadwal"
-          onClick={onEdit}
-          className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
-        >
-          <MaterialIcon className="text-[18px]">
-            edit
-          </MaterialIcon>
-        </button>
-
-        <button
-          type="button"
-          title="Hapus blok jadwal"
-          aria-label="Hapus jadwal"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
-        >
-          <MaterialIcon className="text-[18px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
+          <MaterialIcon className="text-[22px]">
             delete
           </MaterialIcon>
-        </button>
-      </div>
-    </div>
-  )
-}
+        </div>
 
-function AiRevisionModal({
-  selectedSchedules,
-  value,
-  onChange,
-  onClose,
-  onGenerate,
-}) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                <MaterialIcon className="text-[20px]">
-                  auto_awesome
-                </MaterialIcon>
-              </div>
+        <h3 className="mt-4 text-lg font-semibold text-slate-900">
+          {title}
+        </h3>
 
-              <h3 className="text-base font-semibold text-slate-900">
-                Edit Jadwal dengan AI
-              </h3>
-            </div>
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          {description}
+        </p>
 
-            <p className="mt-1 text-xs text-slate-500">
-              Jelaskan perubahan yang Anda inginkan.
-            </p>
-          </div>
-
+        <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-          >
-            <MaterialIcon className="text-[20px]">
-              close
-            </MaterialIcon>
-          </button>
-        </div>
-
-        <div className="border-b border-slate-200 bg-slate-50 px-6 py-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-            Blok yang akan direvisi
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {selectedSchedules.map((schedule) => (
-              <span
-                key={schedule.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
-              >
-                <span className="text-blue-600">
-                  {schedule.time}
-                </span>
-
-                <span className="text-slate-300">•</span>
-
-                {schedule.title}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="px-6 py-5">
-          <label
-            htmlFor="ai-request"
-            className="mb-2 block text-sm font-medium text-slate-900"
-          >
-            Apa yang ingin Anda ubah?
-          </label>
-
-          <textarea
-            id="ai-request"
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder="Contoh: Saya ingin lebih fokus belajar di malam hari dan mengurangi aktivitas yang kurang penting."
-            rows={5}
-            className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-
-          <p className="mt-2 text-xs leading-[18px] text-slate-500">
-            DailyFlow akan mempertimbangkan blok yang dipilih,
-            jadwal lainnya, serta batasan rutinitas Anda.
-          </p>
-        </div>
-
-        <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            onClick={onCancel}
+            className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             Batal
           </button>
 
           <button
             type="button"
-            onClick={onGenerate}
-            disabled={!value.trim()}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onConfirm}
+            className="h-10 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-700"
           >
-            <MaterialIcon className="text-[18px]">
-              auto_awesome
-            </MaterialIcon>
-
-            Generate Perubahan
+            Hapus
           </button>
         </div>
       </div>
@@ -736,137 +288,667 @@ function AiRevisionModal({
   )
 }
 
-function SyncCard({ scheduleCount }) {
+function ScheduleForm({
+  title,
+  values,
+  onChange,
+  onCancel,
+  onSave,
+  error,
+  saveLabel,
+}) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-          <MaterialIcon className="text-[20px]">
-            cloud_sync
+    <div className="rounded-xl border border-blue-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <MaterialIcon className="text-[19px]">
+            {saveLabel === "Tambah Aktivitas"
+              ? "add"
+              : "edit"}
           </MaterialIcon>
         </div>
 
         <div>
-          <h3 className="text-base font-semibold leading-6 text-slate-900">
-            Siap Disinkronkan
+          <h3 className="text-sm font-semibold text-slate-900">
+            {title}
           </h3>
 
-          <p className="text-xs leading-[18px] text-slate-500">
-            Ekspor sekali klik ke kalender aktif Anda.
+          <p className="mt-0.5 text-xs text-slate-500">
+            Atur detail aktivitas dan waktunya.
           </p>
         </div>
       </div>
 
-      <div className="mb-4 space-y-2 rounded-lg bg-slate-50 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-slate-500">
-            Blok Jadwal:
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-slate-600">
+            Waktu Mulai
           </span>
 
-          <span className="text-xs font-medium text-slate-900">
-            {scheduleCount} blok
-          </span>
-        </div>
+          <input
+            type="time"
+            value={values.startTime}
+            onChange={(event) =>
+              onChange({
+                ...values,
+                startTime: event.target.value,
+              })
+            }
+            className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
 
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-slate-500">
-            Kalender Tujuan:
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-slate-600">
+            Waktu Selesai
           </span>
 
-          <span className="text-xs font-medium text-blue-600">
-            DailyFlow (Routine Layer)
+          <input
+            type="time"
+            value={values.endTime}
+            onChange={(event) =>
+              onChange({
+                ...values,
+                endTime: event.target.value,
+              })
+            }
+            className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className="mb-1.5 block text-xs font-medium text-slate-600">
+            Judul
           </span>
-        </div>
+
+          <input
+            type="text"
+            value={values.title}
+            onChange={(event) =>
+              onChange({
+                ...values,
+                title: event.target.value,
+              })
+            }
+            placeholder="Contoh: Membaca Buku"
+            className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-slate-600">
+            Kategori
+          </span>
+
+          <select
+            value={values.category}
+            onChange={(event) =>
+              onChange({
+                ...values,
+                category: event.target.value,
+              })
+            }
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          >
+            <option value="sleep">Tidur</option>
+            <option value="work">Kerja</option>
+            <option value="study">Belajar</option>
+            <option value="exercise">Olahraga</option>
+            <option value="meal">Makan</option>
+            <option value="personal">
+              Personal
+            </option>
+            <option value="hobby">Hobi</option>
+            <option value="rest">
+              Istirahat
+            </option>
+            <option value="other">
+              Lainnya
+            </option>
+          </select>
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className="mb-1.5 block text-xs font-medium text-slate-600">
+            Deskripsi
+          </span>
+
+          <textarea
+            rows={3}
+            value={values.description}
+            onChange={(event) =>
+              onChange({
+                ...values,
+                description: event.target.value,
+              })
+            }
+            placeholder="Tambahkan keterangan aktivitas."
+            className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+        </label>
       </div>
 
-      <div className="mb-4 space-y-3">
-        <SyncCheck text={`${scheduleCount} blok jadwal siap diekspor`} />
-        <SyncCheck text="Peringatan notifikasi 10 menit sebelumnya" />
-        <SyncCheck text="Deteksi jeda buffer aktif" />
-      </div>
-
-      <button
-        type="button"
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-      >
-        Sinkronkan Sekarang
-
-        <MaterialIcon className="text-[16px]">
-          arrow_forward
-        </MaterialIcon>
-      </button>
-
-      <button
-        type="button"
-        className="mt-3 block w-full text-center text-xs font-medium text-slate-500 transition-colors hover:text-blue-600"
-      >
-        Buka Tab Export &amp; Sync →
-      </button>
-    </div>
-  )
-}
-
-function SyncCheck({ text }) {
-  return (
-    <div className="flex items-center gap-2 text-slate-500">
-      <MaterialIcon className="text-[18px] text-blue-600">
-        check
-      </MaterialIcon>
-
-      <span className="text-xs leading-[18px]">
-        {text}
-      </span>
-    </div>
-  )
-}
-
-function TipsCard() {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
-          <MaterialIcon className="text-[20px]">
-            lightbulb
+      {error && (
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+          <MaterialIcon className="mt-0.5 shrink-0 text-[18px]">
+            error
           </MaterialIcon>
+
+          <p>{error}</p>
         </div>
+      )}
 
-        <h3 className="text-base font-semibold leading-6 text-slate-900">
-          Tips Ritme Harian
-        </h3>
+      <div className="mt-5 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          Batal
+        </button>
+
+        <button
+          type="button"
+          onClick={onSave}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          <MaterialIcon className="text-[18px]">
+            save
+          </MaterialIcon>
+
+          {saveLabel}
+        </button>
       </div>
-
-      <ul className="space-y-4 text-xs leading-[18px] text-slate-500">
-        <Tip
-          title="Lindungi Sesi Fokus:"
-          text="Gunakan blok kerja atau belajar sebagai waktu fokus utama dan minimalkan gangguan."
-        />
-
-        <Tip
-          title="Jaga Ritme:"
-          text="Pertahankan waktu tidur, makan, dan istirahat agar jadwal tetap realistis."
-        />
-
-        <Tip
-          title="Manfaatkan Buffer:"
-          text="Gunakan waktu fleksibel untuk menyesuaikan aktivitas tanpa mengganggu blok penting lainnya."
-        />
-      </ul>
     </div>
   )
 }
 
-function Tip({ title, text }) {
-  return (
-    <li className="flex items-start gap-2">
-      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
+function DashboardSchedule({
+  plan,
+  form,
+  onEdit,
+  onUpdateSchedule,
+  onAddSchedule,
+  onDeleteSchedule,
+}) {
+  const [editingId, setEditingId] =
+    useState(null)
 
-      <span>
-        <strong className="font-medium text-slate-900">
-          {title}
-        </strong>{" "}
-        {text}
-      </span>
-    </li>
+  const [editingValues, setEditingValues] =
+    useState(null)
+
+  const [editingError, setEditingError] =
+    useState("")
+
+  const [isAdding, setIsAdding] =
+    useState(false)
+
+  const [newSchedule, setNewSchedule] =
+    useState({
+      startTime: "",
+      endTime: "",
+      title: "",
+      category: "personal",
+      description: "",
+    })
+
+  const [addError, setAddError] =
+    useState("")
+
+  const [deleteTarget, setDeleteTarget] =
+    useState(null)
+
+  const schedule = useMemo(
+    () => normalizeSchedule(plan?.schedule),
+    [plan?.schedule]
+  )
+
+  const conflicts = useMemo(
+    () => calculateConflicts(schedule),
+    [schedule]
+  )
+
+  const totalMinutes = useMemo(
+    () =>
+      schedule.reduce(
+        (total, item) =>
+          total +
+          getDurationInMinutes(
+            item.startTime,
+            item.endTime
+          ),
+        0
+      ),
+    [schedule]
+  )
+
+  const flexibleMinutes = useMemo(
+    () =>
+      schedule
+        .filter(
+          (item) =>
+            item.type === "flexible"
+        )
+        .reduce(
+          (total, item) =>
+            total +
+            getDurationInMinutes(
+              item.startTime,
+              item.endTime
+            ),
+          0
+        ),
+    [schedule]
+  )
+
+  const handleStartEdit = (item) => {
+    setIsAdding(false)
+    setAddError("")
+
+    setEditingId(item.id)
+
+    setEditingError("")
+
+    setEditingValues({
+      startTime: item.startTime,
+      endTime: item.endTime,
+      title: item.title,
+      category: item.category,
+      description: item.description,
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditingValues(null)
+    setEditingError("")
+  }
+
+  const handleSaveEdit = async (
+    itemId
+  ) => {
+    if (!editingValues) {
+      return
+    }
+
+    if (!editingValues.title.trim()) {
+      setEditingError(
+        "Judul aktivitas wajib diisi."
+      )
+      return
+    }
+
+    const validationError =
+      validateScheduleTime(
+        editingValues.startTime,
+        editingValues.endTime,
+        schedule,
+        itemId
+      )
+
+    if (validationError) {
+      setEditingError(validationError)
+      return
+    }
+
+    await onUpdateSchedule(
+      itemId,
+      {
+        ...editingValues,
+        title: editingValues.title.trim(),
+        description:
+          editingValues.description.trim(),
+      }
+    )
+
+    setEditingId(null)
+    setEditingValues(null)
+    setEditingError("")
+  }
+
+  const handleStartAdd = () => {
+    setEditingId(null)
+    setEditingValues(null)
+    setEditingError("")
+
+    setNewSchedule({
+      startTime: "",
+      endTime: "",
+      title: "",
+      category: "personal",
+      description: "",
+    })
+
+    setAddError("")
+    setIsAdding(true)
+  }
+
+  const handleCancelAdd = () => {
+    setIsAdding(false)
+    setAddError("")
+  }
+
+  const handleSaveAdd = async () => {
+    if (!newSchedule.title.trim()) {
+      setAddError(
+        "Judul aktivitas wajib diisi."
+      )
+      return
+    }
+
+    const validationError =
+      validateScheduleTime(
+        newSchedule.startTime,
+        newSchedule.endTime,
+        schedule
+      )
+
+    if (validationError) {
+      setAddError(validationError)
+      return
+    }
+
+    await onAddSchedule({
+      ...newSchedule,
+      title: newSchedule.title.trim(),
+      description:
+        newSchedule.description.trim() ||
+        getCategoryLabel(
+          newSchedule.category
+        ),
+    })
+
+    setIsAdding(false)
+    setAddError("")
+    setNewSchedule({
+      startTime: "",
+      endTime: "",
+      title: "",
+      category: "personal",
+      description: "",
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) {
+      return
+    }
+
+    const scheduleId =
+      deleteTarget.id
+
+    setDeleteTarget(null)
+
+    await onDeleteSchedule(
+      scheduleId
+    )
+  }
+
+  return (
+    <>
+      <section>
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-medium text-blue-600">
+              Jadwal Hari Ini
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+              Rutinitas Anda
+            </h2>
+
+            <p className="mt-2 text-sm text-slate-500">
+              {schedule.length} blok aktivitas
+              dalam rutinitas Anda
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleStartAdd}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          >
+            <MaterialIcon className="text-[18px]">
+              add
+            </MaterialIcon>
+
+            Tambah Aktivitas
+          </button>
+        </div>
+
+        {isAdding && (
+          <div className="mb-6">
+            <ScheduleForm
+              title="Tambah Aktivitas"
+              values={newSchedule}
+              onChange={setNewSchedule}
+              onCancel={handleCancelAdd}
+              onSave={handleSaveAdd}
+              error={addError}
+              saveLabel="Tambah Aktivitas"
+            />
+          </div>
+        )}
+
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">
+              Total Rutinitas
+            </p>
+
+            <p className="mt-2 text-2xl font-semibold text-slate-900">
+              {formatHours(
+                totalMinutes
+              )}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">
+              Waktu Fleksibel
+            </p>
+
+            <p className="mt-2 text-2xl font-semibold text-slate-900">
+              {formatHours(
+                flexibleMinutes
+              )}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">
+              Potensi Benturan
+            </p>
+
+            <p
+              className={`mt-2 text-2xl font-semibold ${
+                conflicts.size > 0
+                  ? "text-red-600"
+                  : "text-slate-900"
+              }`}
+            >
+              {conflicts.size}
+            </p>
+          </div>
+        </div>
+
+        {schedule.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <MaterialIcon className="text-[25px]">
+                event
+              </MaterialIcon>
+            </div>
+
+            <h3 className="mt-4 text-base font-semibold text-slate-900">
+              Belum ada aktivitas
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Tambahkan aktivitas pertama
+              ke rutinitas Anda.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleStartAdd}
+              className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              <MaterialIcon className="text-[18px]">
+                add
+              </MaterialIcon>
+
+              Tambah Aktivitas
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {schedule.map((item) => {
+              const styles =
+                getScheduleStyles(
+                  item.category
+                )
+
+              const isEditing =
+                editingId === item.id
+
+              const hasConflict =
+                conflicts.has(item.id)
+
+              if (isEditing) {
+                return (
+                  <ScheduleForm
+                    key={item.id}
+                    title="Edit Aktivitas"
+                    values={
+                      editingValues
+                    }
+                    onChange={
+                      setEditingValues
+                    }
+                    onCancel={
+                      handleCancelEdit
+                    }
+                    onSave={() =>
+                      handleSaveEdit(
+                        item.id
+                      )
+                    }
+                    error={
+                      editingError
+                    }
+                    saveLabel="Simpan"
+                  />
+                )
+              }
+
+              return (
+                <div
+                  key={item.id}
+                  className={`rounded-xl border bg-white p-4 shadow-sm ${
+                    hasConflict
+                      ? "border-red-200"
+                      : "border-slate-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${styles.dot}`}
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {item.startTime}{" "}
+                          -{" "}
+                          {item.endTime}
+                        </p>
+
+                        <span
+                          className={`w-fit rounded-md px-2 py-1 text-[11px] font-medium ${styles.badge}`}
+                        >
+                          {getCategoryLabel(
+                            item.category
+                          )}
+                        </span>
+
+                        {hasConflict && (
+                          <span className="inline-flex w-fit items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-[11px] font-medium text-red-700">
+                            <MaterialIcon className="text-[14px]">
+                              warning
+                            </MaterialIcon>
+
+                            Benturan
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="mt-2 text-base font-semibold text-slate-900">
+                        {item.title}
+                      </h3>
+
+                      <p className="mt-1 text-sm leading-6 text-slate-500">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleStartEdit(
+                            item
+                          )
+                        }
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                        title="Edit manual"
+                      >
+                        <MaterialIcon className="text-[19px]">
+                          edit
+                        </MaterialIcon>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeleteTarget(
+                            item
+                          )
+                        }
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                        title="Hapus aktivitas"
+                      >
+                        <MaterialIcon className="text-[19px]">
+                          delete
+                        </MaterialIcon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <DeleteConfirmationModal
+        isOpen={Boolean(
+          deleteTarget
+        )}
+        title="Hapus aktivitas?"
+        description={
+          deleteTarget
+            ? `Aktivitas "${deleteTarget.title}" akan dihapus dari rutinitas harian Anda.`
+            : ""
+        }
+        onCancel={() =>
+          setDeleteTarget(null)
+        }
+        onConfirm={
+          handleDeleteConfirm
+        }
+      />
+    </>
   )
 }
 

@@ -1,12 +1,15 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   getFirestore,
   limit,
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore"
 
 import app from "../config/firebase"
@@ -62,4 +65,51 @@ export async function getLatestDailyPlan(userId) {
     id: document.id,
     ...document.data(),
   }
+}
+
+export async function updateDailyPlan(userId, planId, planData) {
+  if (!userId) {
+    throw new Error("User ID is required.")
+  }
+
+  if (!planId) {
+    throw new Error("Plan ID is required.")
+  }
+
+  if (!planData) {
+    throw new Error("Plan data is required.")
+  }
+
+  const planRef = doc(
+    db,
+    "users",
+    userId,
+    "plans",
+    planId
+  )
+
+  await updateDoc(planRef, {
+    ...planData,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function deleteDailyPlan(userId, planId) {
+  if (!userId) {
+    throw new Error("User ID is required.")
+  }
+
+  if (!planId) {
+    throw new Error("Plan ID is required.")
+  }
+
+  const planRef = doc(
+    db,
+    "users",
+    userId,
+    "plans",
+    planId
+  )
+
+  await deleteDoc(planRef)
 }
