@@ -27,7 +27,7 @@ function Commitment({
               : "border-slate-200 bg-slate-100 text-slate-500"
           }`}
         >
-          {isFlexible ? "Scheduled Dynamically" : "Non-negotiable"}
+          {isFlexible ? "Dijadwalkan Dinamis" : "Tidak Boleh Digeser"}
         </span>
       </div>
 
@@ -74,16 +74,17 @@ function SmartScheduling() {
           {/* Text */}
           <div className="lg:col-span-6">
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Intelligent Architecture
+              Arsitektur Cerdas
             </span>
 
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-dark">
-              Make time for what matters.
+              Sediakan waktu untuk hal yang penting.
             </h2>
 
             <p className="mt-4 text-base leading-relaxed text-muted">
-              DailyFlow works around the things you cannot move and finds the
-              right place for the things you want to make time for.
+              DailyFlow bekerja di sekitar hal-hal yang tidak bisa kamu geser
+              dan menemukan tempat yang tepat untuk hal-hal yang ingin kamu
+              sisihkan waktunya.
             </p>
 
             <div className="mt-6 space-y-3.5">
@@ -94,12 +95,12 @@ function SmartScheduling() {
 
                 <div>
                   <h4 className="text-sm font-semibold text-dark">
-                    Anchored Commitments
+                    Komitmen Pengunggu
                   </h4>
 
                   <p className="mt-0.5 text-xs text-slate-500">
-                    Fixed job hours, sleep times, and other important
-                    commitments are locked down first.
+                    Jam kerja tetap, waktu tidur, dan komitmen penting lainnya
+                    dikunci terlebih dahulu.
                   </p>
                 </div>
               </div>
@@ -111,12 +112,12 @@ function SmartScheduling() {
 
                 <div>
                   <h4 className="text-sm font-semibold text-dark">
-                    Dynamic Habits & Routines
+                    Kebiasaan & Rutinitas Dinamis
                   </h4>
 
                   <p className="mt-0.5 text-xs text-slate-500">
-                    Flexible activities fill available time around your fixed
-                    commitments.
+                    Aktivitas fleksibel mengisi waktu kosong di sekitar
+                    komitmen tetapmu.
                   </p>
                 </div>
               </div>
@@ -127,34 +128,34 @@ function SmartScheduling() {
           <div className="lg:col-span-6">
             <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <Commitment
-                title="Fixed Commitments"
+                title="Komitmen Tetap"
                 description={[
                   {
-                    text: "08:00 – 17:00 Work Hours",
-                    meta: "Anchor",
+                    text: "08:00 – 17:00 Jam Kerja",
+                    meta: "Pengunggu",
                   },
                   {
-                    text: "22:30 – 06:00 Sleep Rest",
-                    meta: "Anchor",
+                    text: "22:30 – 06:00 Istirahat Tidur",
+                    meta: "Pengunggu",
                   },
                   {
-                    text: "Important daily commitments",
-                    meta: "Anchor",
+                    text: "Komitmen harian penting",
+                    meta: "Pengunggu",
                   },
                 ]}
               />
 
               <Commitment
-                title="Flexible Activities"
+                title="Aktivitas Fleksibel"
                 variant="flexible"
                 description={[
                   {
-                    text: "Exercise (45 mins)",
-                    meta: "Placed at 18:00",
+                    text: "Olahraga (45 menit)",
+                    meta: "Ditempatkan pukul 18:00",
                   },
                   {
-                    text: "Learning & Reading (60 mins)",
-                    meta: "Placed at 20:00",
+                    text: "Belajar & Membaca (60 menit)",
+                    meta: "Ditempatkan pukul 20:00",
                   },
                 ]}
               />

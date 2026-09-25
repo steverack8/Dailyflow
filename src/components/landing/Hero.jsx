@@ -87,18 +87,18 @@ function Hero() {
         {/* Badge */}
         <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          Intelligent cadence & time planning
+          Perencanaan jadwal & ritme waktu yang cerdas
         </div>
 
         {/* Heading */}
         <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-[1.15] tracking-tight text-dark sm:text-5xl md:text-6xl">
-          Make your day flow better.
+          Buat harimu mengalir lebih baik.
         </h1>
 
         {/* Description */}
         <p className="mx-auto mt-6 max-w-2xl text-lg font-normal leading-relaxed text-muted sm:text-xl">
-          DailyFlow turns your routines, commitments, and priorities into a
-          realistic daily plan that fits your life.
+          DailyFlow mengubah rutinitas, komitmen, dan prioritas Anda menjadi
+          rencana harian yang realistis dan sesuai dengan hidup Anda.
         </p>
 
         {/* CTA */}
@@ -107,7 +107,7 @@ function Hero() {
             href="#get-started"
             className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
           >
-            Build my daily flow
+            Buat alur harianku
           </a>
         </div>
 
@@ -122,14 +122,14 @@ function Hero() {
                 <div className="h-2.5 w-2.5 rounded-full bg-slate-300" />
 
                 <span className="ml-2 text-xs font-medium text-slate-500">
-                  Today's Flow — Wednesday, October 22
+                  Alur Hari Ini — Rabu, 22 Oktober
                 </span>
               </div>
 
               <div className="hidden items-center gap-3 text-xs text-slate-500 sm:flex">
                 <span className="inline-flex items-center gap-1.5 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Balanced (16h Active)
+                  Seimbang (16 jam Aktif)
                 </span>
               </div>
             </div>
@@ -137,88 +137,88 @@ function Hero() {
             {/* Timeline */}
             <div className="bg-slate-50/40 p-6 md:p-8">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TimelineColumn title="Morning & Work">
+                <TimelineColumn title="Pagi & Kerja">
                   <TimelineItem
                     time="06:00"
-                    title="Wake up"
-                    category="Sleep"
+                    title="Bangun tidur"
+                    category="Tidur"
                   />
 
                   <TimelineItem
                     time="06:30"
-                    title="Morning routine"
+                    title="Rutinitas pagi"
                     category="Personal"
                   />
 
                   <TimelineItem
                     time="07:00"
-                    title="Breakfast"
-                    category="Meals"
+                    title="Sarapan"
+                    category="Makan"
                   />
 
                   <TimelineItem
                     time="08:00"
-                    title="Work"
-                    description="Fixed Deep Work"
-                    category="Anchor"
+                    title="Kerja"
+                    description="Fokus Mendalam Tetap"
+                    category="Pengunggu"
                     variant="anchor"
                   />
 
                   <TimelineItem
                     time="12:00"
-                    title="Lunch & Prayer"
-                    category="Midday"
+                    title="Makan Siang & Sholat"
+                    category="Tengah Hari"
                   />
 
                   <TimelineItem
                     time="13:00"
-                    title="Work"
-                    description="Collaborative Tasks"
-                    category="Anchor"
+                    title="Kerja"
+                    description="Tugas Kolaboratif"
+                    category="Pengunggu"
                     variant="anchor"
                   />
                 </TimelineColumn>
 
-                <TimelineColumn title="Evening & Wind Down">
+                <TimelineColumn title="Malam & Persiapan Tidur">
                   <TimelineItem
                     time="17:00"
-                    title="Finish work"
-                    category="Transition"
+                    title="Selesai kerja"
+                    category="Transisi"
                   />
 
                   <TimelineItem
                     time="18:00"
-                    title="Exercise"
-                    description="Flexible Habit"
-                    category="Flexible"
+                    title="Olahraga"
+                    description="Kebiasaan Fleksibel"
+                    category="Fleksibel"
                     variant="flexible"
                   />
 
                   <TimelineItem
                     time="19:00"
-                    title="Dinner & Prayer"
-                    category="Meals"
+                    title="Makan Malam & Sholat"
+                    category="Makan"
                   />
 
                   <TimelineItem
                     time="20:00"
-                    title="Learning"
-                    description="Personal Growth"
-                    category="Study"
+                    title="Belajar"
+                    description="Pengembangan Diri"
+                    category="Belajar"
                   />
 
                   <TimelineItem
                     time="21:00"
-                    title="Free time"
-                    description="Wind down"
+                    title="Waktu luang"
+                    description="Bersantai"
                     category="Personal"
                   />
 
                   <TimelineItem
                     time="22:30"
-                    title="Sleep"
-                    description="Optimal Rest"
-                    category="Anchor"
+                    title="Tidur"
+                    description="Istirahat Optimal"
+                    category="Pengunggu"
                     variant="sleep"
                   />
                 </TimelineColumn>
@@ -227,13 +227,13 @@ function Hero() {
 
             {/* Bottom */}
             <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-2.5 text-xs text-slate-500">
-              <span>Synchronized across daily habits</span>
+              <span>Tersinkronisasi dengan kebiasaan harian</span>
 
               <span className="flex items-center gap-1 font-medium text-primary">
                 <span className="material-symbols-outlined text-[16px]">
                   sync
                 </span>
-                Auto-synced
+                Otomatis tersinkron
               </span>
             </div>
           </div>

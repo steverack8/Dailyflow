@@ -1,28 +1,28 @@
 function PriorityStep({ form, onChange, onToggleGoal }) {
   const goals = [
-    { value: "exercise", label: "Exercise" },
-    { value: "learning", label: "Learning" },
-    { value: "reading", label: "Reading" },
-    { value: "personal", label: "Personal time" },
-    { value: "hobby", label: "Hobbies" },
-    { value: "family", label: "Family time" },
+    { value: "exercise", label: "Olahraga" },
+    { value: "learning", label: "Belajar" },
+    { value: "reading", label: "Membaca" },
+    { value: "personal", label: "Waktu pribadi" },
+    { value: "hobby", label: "Hobi" },
+    { value: "family", label: "Waktu keluarga" },
   ]
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-dark">
-          Your priorities
+          Prioritasmu
         </h3>
 
         <p className="mt-1 text-sm text-muted">
-          Choose what you want Dailyflow to make room for.
+          Pilih hal yang ingin Dailyflow sediakan waktunya.
         </p>
       </div>
 
       <div>
         <label className="mb-3 block text-sm font-medium text-dark">
-          What matters to you?
+          Apa yang penting bagimu?
         </label>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -49,14 +49,14 @@ function PriorityStep({ form, onChange, onToggleGoal }) {
 
       <div>
         <label className="mb-3 block text-sm font-medium text-dark">
-          When do you prefer demanding tasks?
+          Kapan kamu lebih suka mengerjakan tugas berat?
         </label>
 
         <div className="grid gap-3 sm:grid-cols-3">
           {[
-            ["morning", "Morning"],
-            ["balanced", "Balanced"],
-            ["evening", "Evening"],
+            ["morning", "Pagi"],
+            ["balanced", "Seimbang"],
+            ["evening", "Malam"],
           ].map(([value, label]) => (
             <label
               key={value}
@@ -85,14 +85,14 @@ function PriorityStep({ form, onChange, onToggleGoal }) {
 
       <div>
         <label className="mb-3 block text-sm font-medium text-dark">
-          Break preference
+          Preferensi jeda
         </label>
 
         <div className="grid gap-3 sm:grid-cols-3">
           {[
-            ["long_focus", "Longer focus"],
-            ["balanced", "Balanced"],
-            ["frequent", "Frequent breaks"],
+            ["long_focus", "Fokus lebih lama"],
+            ["balanced", "Seimbang"],
+            ["frequent", "Jeda sering"],
           ].map(([value, label]) => (
             <label
               key={value}
@@ -121,7 +121,7 @@ function PriorityStep({ form, onChange, onToggleGoal }) {
 
       <div>
         <label className="mb-2 block text-sm font-medium text-dark">
-          Anything else?
+          Ada lagi?
         </label>
 
         <textarea
@@ -129,7 +129,7 @@ function PriorityStep({ form, onChange, onToggleGoal }) {
           value={form.otherRoutine}
           onChange={onChange}
           rows={4}
-          placeholder="Tell us about other routines, commitments, or preferences..."
+          placeholder="Ceritakan rutinitas, komitmen, atau preferensi lainnya..."
           className="w-full resize-none rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
         />
       </div>

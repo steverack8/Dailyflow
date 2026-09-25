@@ -330,7 +330,7 @@ function ActivityAnalysisPage() {
             </p>
 
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-              Activity Analysis
+              Analisis Aktivitas
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
@@ -564,7 +564,7 @@ function ActivityAnalysisPage() {
 
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">
-                    AI Analysis
+                    Analisis AI
                   </h2>
 
                   <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -577,7 +577,7 @@ function ActivityAnalysisPage() {
             <section className="mt-6 grid gap-6 lg:grid-cols-2">
               <AnalysisCard
                 icon="bedtime"
-                title="Tidur & Recovery"
+                title="Tidur & Pemulihan"
               >
                 <p className="text-sm leading-6 text-slate-600">
                   {analysis.sleep

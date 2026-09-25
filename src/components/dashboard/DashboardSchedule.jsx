@@ -28,14 +28,14 @@ function formatHours(minutes) {
   const remainingMinutes = minutes % 60
 
   if (hours === 0) {
-    return `${remainingMinutes}m`
+    return `${remainingMinutes}mnt`
   }
 
   if (remainingMinutes === 0) {
-    return `${hours}j`
+    return `${hours}jam`
   }
 
-  return `${hours}j ${remainingMinutes}m`
+  return `${hours}jam ${remainingMinutes}mnt`
 }
 
 function getCategoryLabel(category) {
@@ -465,8 +465,6 @@ function ScheduleForm({
 
 function DashboardSchedule({
   plan,
-  form,
-  onEdit,
   onUpdateSchedule,
   onAddSchedule,
   onDeleteSchedule,

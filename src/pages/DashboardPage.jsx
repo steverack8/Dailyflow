@@ -98,7 +98,7 @@ function DashboardPage() {
 
       if (!generatedPlan) {
         throw new Error(
-          "Generated plan is empty."
+          "Rencana yang dibuat kosong."
         )
       }
 
@@ -364,7 +364,7 @@ function DashboardPage() {
               auto_awesome
             </MaterialIcon>
 
-            Atur Ulang / Re-generate
+            Atur Ulang Jadwal
           </button>
         </div>
 
@@ -411,8 +411,6 @@ function DashboardPage() {
         ) : (
           <DashboardSchedule
             plan={plan}
-            form={form}
-            onEdit={handleOpenPlanner}
             onUpdateSchedule={
               handleUpdateSchedule
             }

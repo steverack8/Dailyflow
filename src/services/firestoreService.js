@@ -1,7 +1,6 @@
 import {
   addDoc,
   collection,
-  deleteDoc,
   doc,
   getDocs,
   getFirestore,
@@ -18,11 +17,11 @@ const db = getFirestore(app)
 
 export async function saveDailyPlan(userId, plan, sourceData) {
   if (!userId) {
-    throw new Error("User ID is required.")
+    throw new Error("ID pengguna wajib diisi.")
   }
 
   if (!plan) {
-    throw new Error("Plan is required.")
+    throw new Error("Rencana wajib diisi.")
   }
 
   const plansRef = collection(db, "users", userId, "plans")
@@ -42,7 +41,7 @@ export async function saveDailyPlan(userId, plan, sourceData) {
 
 export async function getLatestDailyPlan(userId) {
   if (!userId) {
-    throw new Error("User ID is required.")
+    throw new Error("ID pengguna wajib diisi.")
   }
 
   const plansRef = collection(db, "users", userId, "plans")
@@ -69,15 +68,15 @@ export async function getLatestDailyPlan(userId) {
 
 export async function updateDailyPlan(userId, planId, planData) {
   if (!userId) {
-    throw new Error("User ID is required.")
+    throw new Error("ID pengguna wajib diisi.")
   }
 
   if (!planId) {
-    throw new Error("Plan ID is required.")
+    throw new Error("ID rencana wajib diisi.")
   }
 
   if (!planData) {
-    throw new Error("Plan data is required.")
+    throw new Error("Data rencana wajib diisi.")
   }
 
   const planRef = doc(
@@ -92,24 +91,4 @@ export async function updateDailyPlan(userId, planId, planData) {
     ...planData,
     updatedAt: serverTimestamp(),
   })
-}
-
-export async function deleteDailyPlan(userId, planId) {
-  if (!userId) {
-    throw new Error("User ID is required.")
-  }
-
-  if (!planId) {
-    throw new Error("Plan ID is required.")
-  }
-
-  const planRef = doc(
-    db,
-    "users",
-    userId,
-    "plans",
-    planId
-  )
-
-  await deleteDoc(planRef)
 }

@@ -7,15 +7,15 @@ import { useAuth } from "../../contexts/AuthContext"
 
 const navItems = [
   {
-    label: "Dashboard & Plan",
+    label: "Dasbor & Rencana",
     to: "/dashboard",
   },
   {
-    label: "Activity Analysis",
+    label: "Analisis Aktivitas",
     to: "/activity-analysis",
   },
   {
-    label: "Export & Sync",
+    label: "Ekspor & Sinkronisasi",
     to: "/export-sync",
   },
 ]
@@ -42,7 +42,7 @@ function AppNavbar() {
   }
 
   const userEmail = user?.email || ""
-  const userName = user?.displayName || "User"
+  const userName = user?.displayName || "Pengguna"
   const userPhoto = user?.photoURL
 
   return (
@@ -105,7 +105,7 @@ function AppNavbar() {
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
               className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 transition-colors hover:bg-slate-200"
-              aria-label="User menu"
+              aria-label="Menu pengguna"
               aria-expanded={isMenuOpen}
             >
               {userPhoto ? (
@@ -166,7 +166,9 @@ function AppNavbar() {
                     </MaterialIcon>
 
                     <span>
-                      {isLoggingOut ? "Signing out..." : "Logout"}
+                      {isLoggingOut
+                        ? "Keluar..."
+                        : "Keluar"}
                     </span>
                   </button>
                 </div>

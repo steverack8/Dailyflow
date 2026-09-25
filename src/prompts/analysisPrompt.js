@@ -81,5 +81,6 @@ Berikan hasil dalam struktur JSON berikut:
 }
 
 Pastikan response hanya berupa JSON valid.
+- Seluruh nilai string dalam bahasa Indonesia.
 `
 }

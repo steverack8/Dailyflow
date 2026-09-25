@@ -159,7 +159,7 @@ END:VCALENDAR`
     }
 
     const text = [
-      "DailyFlow Routine",
+      "Rutinitas DailyFlow",
       "",
       ...activities.map(
         (activity) =>
@@ -189,11 +189,11 @@ END:VCALENDAR`
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-2 text-sm font-medium text-blue-600">
             <MaterialIcon name="download" />
-            Export
+            Ekspor
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Export DailyFlow
+            Ekspor DailyFlow
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
@@ -224,7 +224,7 @@ END:VCALENDAR`
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Export jadwal yang sudah kamu buat.
+                Ekspor jadwal yang sudah kamu buat.
               </p>
             </div>
 
@@ -242,7 +242,7 @@ END:VCALENDAR`
 
                 <span>
                   <span className="block">
-                    Download .ICS
+                    Unduh .ICS
                   </span>
 
                   <span className="mt-0.5 block text-xs font-normal text-blue-600">
@@ -278,7 +278,7 @@ END:VCALENDAR`
                   className="text-slate-500"
                 />
 
-                <span>Download .TXT</span>
+                <span>Unduh .TXT</span>
               </button>
             </div>
 
@@ -313,7 +313,7 @@ END:VCALENDAR`
             <div className="space-y-4 p-6">
               <Step
                 number="1"
-                title="Download .ICS"
+                title="Unduh .ICS"
                 description="Unduh file jadwal dari DailyFlow."
               />
 
@@ -325,7 +325,7 @@ END:VCALENDAR`
 
               <Step
                 number="3"
-                title="Import file"
+                title="Impor file"
                 description="Pilih file DailyFlow-Routine.ics untuk menambahkan jadwal."
               />
             </div>
@@ -342,7 +342,7 @@ END:VCALENDAR`
               <p className="mt-1 text-sm text-slate-500">
                 {loading
                   ? "Memuat jadwal..."
-                  : `${activities.length} aktivitas dari plan terbaru`}
+                  : `${activities.length} aktivitas dari jadwal terbaru`}
               </p>
             </div>
 
@@ -370,7 +370,7 @@ END:VCALENDAR`
                 </p>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Generate DailyFlow terlebih dahulu.
+                  Buat jadwal DailyFlow terlebih dahulu.
                 </p>
               </div>
             ) : (
@@ -420,6 +420,18 @@ function Step({
 }
 
 function ActivityRow({ activity }) {
+  const categoryLabels = {
+    sleep: "Tidur",
+    work: "Kerja",
+    study: "Belajar",
+    exercise: "Olahraga",
+    meal: "Makan",
+    personal: "Personal",
+    hobby: "Hobi",
+    rest: "Istirahat",
+    other: "Lainnya",
+  }
+
   const categoryStyles = {
     sleep:
       "bg-slate-100 text-slate-700 border-slate-200",
@@ -475,7 +487,8 @@ function ActivityRow({ activity }) {
           categoryStyles.other
         }`}
       >
-        {category}
+        {categoryLabels[category] ||
+          categoryLabels.other}
       </span>
     </div>
   )

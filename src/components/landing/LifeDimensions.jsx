@@ -3,43 +3,43 @@ import MaterialIcon from "../ui/MaterialIcon"
 const dimensions = [
   {
     icon: "laptop_mac",
-    title: "Work",
-    description: "Deep & collaborative",
+    title: "Kerja",
+    description: "Fokus & kolaborasi",
   },
   {
     icon: "bedtime",
-    title: "Sleep",
-    description: "Non-negotiable rest",
+    title: "Tidur",
+    description: "Istirahat wajib",
   },
   {
     icon: "fitness_center",
-    title: "Exercise",
-    description: "Cardio, gym, walking",
+    title: "Olahraga",
+    description: "Kardio, gym, jalan kaki",
   },
   {
     icon: "restaurant",
-    title: "Meals",
-    description: "Mindful nourishment",
+    title: "Makan",
+    description: "Nutrisi yang sadar",
   },
   {
     icon: "self_improvement",
-    title: "Prayer",
-    description: "Spiritual anchors",
+    title: "Ibadah",
+    description: "Penjangkar spiritual",
   },
   {
     icon: "menu_book",
-    title: "Study",
-    description: "Courses & reading",
+    title: "Belajar",
+    description: "Kursus & membaca",
   },
   {
     icon: "palette",
-    title: "Hobbies",
-    description: "Creative recharge",
+    title: "Hobi",
+    description: "Isi ulang energi kreatif",
   },
   {
     icon: "spa",
-    title: "Personal time",
-    description: "Family & wind down",
+    title: "Waktu pribadi",
+    description: "Keluarga & bersantai",
   },
 ]
 
@@ -52,12 +52,13 @@ function LifeDimensions() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-dark">
-            Your day is more than a to-do list.
+            Harimu lebih dari sekadar daftar tugas.
           </h2>
 
           <p className="mt-3 text-base text-muted">
-            DailyFlow considers the different dimensions of everyday life
-            rather than treating your day like an endless task list.
+            DailyFlow mempertimbangkan berbagai dimensi kehidupan sehari-hari
+            alih-alih memperlakukan harimu seperti daftar tugas yang tak
+            berujung.
           </p>
         </div>
 

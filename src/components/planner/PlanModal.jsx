@@ -37,19 +37,19 @@ const initialForm = {
 const steps = [
   {
     number: "01",
-    title: "About You",
+    title: "Tentang Anda",
   },
   {
     number: "02",
-    title: "Fixed Schedule",
+    title: "Jadwal Tetap",
   },
   {
     number: "03",
-    title: "Daily Life",
+    title: "Keseharian",
   },
   {
     number: "04",
-    title: "Priorities",
+    title: "Prioritas",
   },
 ]
 
@@ -172,11 +172,11 @@ function PlanModal({
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
-              Build your flow
+              Susun alurmu
             </p>
 
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-dark">
-              Create My Daily Flow
+              Buat Alur Harianku
             </h2>
           </div>
 
@@ -185,7 +185,7 @@ function PlanModal({
             onClick={handleClose}
             disabled={isGenerating}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-dark disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Close"
+            aria-label="Tutup"
           >
             <MaterialIcon>close</MaterialIcon>
           </button>
@@ -240,7 +240,7 @@ function PlanModal({
               arrow_back
             </MaterialIcon>
 
-            Back
+            Kembali
           </button>
 
           <button
@@ -255,13 +255,13 @@ function PlanModal({
                   progress_activity
                 </MaterialIcon>
 
-                Generating...
+                Membuat rencana...
               </>
             ) : (
               <>
                 {currentStep === steps.length - 1
-                  ? "Generate My Flow"
-                  : "Continue"}
+                  ? "Buat Alurku"
+                  : "Lanjut"}
 
                 <MaterialIcon className="text-[19px]">
                   arrow_forward

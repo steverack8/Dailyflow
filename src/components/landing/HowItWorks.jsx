@@ -4,26 +4,26 @@ const steps = [
   {
     number: "01",
     icon: "edit_note",
-    title: "Tell us about your routine",
+    title: "Ceritakan tentang rutinitasmu",
     description:
-      "Add your work, sleep, activities, priorities, and personal preferences.",
-    footer: "Takes less than 2 minutes",
+      "Tambahkan jam kerja, tidur, aktivitas, prioritas, dan preferensi pribadimu.",
+    footer: "Hanya butuh kurang dari 2 menit",
   },
   {
     number: "02",
     icon: "auto_awesome",
-    title: "Let DailyFlow plan",
+    title: "Biarkan DailyFlow yang merencanakan",
     description:
-      "DailyFlow organizes your available time and creates a balanced daily flow around your commitments.",
-    footer: "Designed around your schedule",
+      "DailyFlow menata waktumu yang tersedia dan menyusun alur harian yang seimbang di sekitar komitmenmu.",
+    footer: "Disusun mengikuti jadwalmu",
   },
   {
     number: "03",
     icon: "calendar_today",
-    title: "Flow through your day",
+    title: "Jalani harimu dengan lancar",
     description:
-      "Follow your plan, adjust activities when needed, and optionally sync your schedule to Google Calendar.",
-    footer: "Ready to adapt",
+      "Ikuti rencanamu, sesuaikan aktivitas seperlunya, dan sinkronkan jadwal ke Google Calendar jika mau.",
+    footer: "Siap beradaptasi",
   },
 ]
 
@@ -36,12 +36,12 @@ function HowItWorks() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto mb-16 max-w-xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-dark">
-            A better way to plan your day.
+            Cara lebih baik untuk merencanakan harimu.
           </h2>
 
           <p className="mt-3 text-base text-muted">
-            Understand your routine, organize your available hours, and
-            establish a rhythm you can actually maintain.
+            Pahami rutinitasmu, tata jam-jam yang tersedia, dan bangun ritme
+            yang benar-benar bisa kamu jalani.
           </p>
         </div>
 

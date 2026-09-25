@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 import GoogleLoginButton from "../components/auth/GoogleLoginButton"
+import Skeleton from "../components/ui/Skeleton"
 import logo from "../assets/logo.png"
 import { useAuth } from "../contexts/AuthContext"
 
@@ -14,6 +15,21 @@ function LoginPage() {
       navigate("/dashboard", { replace: true })
     }
   }, [user, loading, navigate])
+
+  if (loading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f8f9ff] px-6">
+        <div className="w-full max-w-xl space-y-4">
+          <Skeleton className="mx-auto h-12 w-12 rounded-full" />
+          <Skeleton className="mx-auto h-6 w-2/3" />
+          <Skeleton className="mx-auto h-4 w-1/2" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-4/6" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f8f9ff] px-4 py-8 sm:px-6">
@@ -31,11 +47,11 @@ function LoginPage() {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-[#0b1c30]">
-              Welcome to DailyFlow
+              Selamat Datang di DailyFlow
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-[#565e74]">
-              Plan your day, manage your time, and stay on track.
+              Rencanakan harimu, kelola waktumu, dan tetap di jalur yang tepat.
             </p>
           </div>
 
@@ -46,7 +62,7 @@ function LoginPage() {
 
           {/* Security */}
           <p className="mt-4 text-center text-xs leading-5 text-[#737686]">
-            Secure sign in with your Google account.
+            Masuk dengan aman menggunakan akun Google Anda.
           </p>
 
           {/* Back */}
@@ -55,14 +71,14 @@ function LoginPage() {
             onClick={() => navigate("/")}
             className="mt-8 text-sm font-medium text-[#565e74] transition-colors hover:text-[#0b1c30]"
           >
-            Back to home
+            Kembali ke beranda
           </button>
         </div>
 
         {/* Footer */}
         <div className="mt-10 border-t border-slate-100 pt-5 text-center">
           <p className="text-xs text-[#737686]">
-            DailyFlow · Your Personal planning
+            DailyFlow · Perencanaan Pribadi Anda
           </p>
         </div>
       </main>

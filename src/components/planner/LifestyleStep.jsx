@@ -3,18 +3,18 @@ function LifestyleStep({ form, onChange }) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-dark">
-          Your daily life
+          Keseharianmu
         </h3>
 
         <p className="mt-1 text-sm text-muted">
-          Set the routines that should be considered when building your day.
+          Atur rutinitas yang perlu dipertimbangkan saat menyusun harimu.
         </p>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Wake up
+            Bangun tidur
           </label>
 
           <input
@@ -28,7 +28,7 @@ function LifestyleStep({ form, onChange }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Sleep
+            Tidur
           </label>
 
           <input
@@ -42,7 +42,7 @@ function LifestyleStep({ form, onChange }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Breakfast
+            Sarapan
           </label>
 
           <input
@@ -56,7 +56,7 @@ function LifestyleStep({ form, onChange }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Lunch
+            Makan siang
           </label>
 
           <input
@@ -70,7 +70,7 @@ function LifestyleStep({ form, onChange }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Dinner
+            Makan malam
           </label>
 
           <input
@@ -84,7 +84,7 @@ function LifestyleStep({ form, onChange }) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Exercise frequency
+            Frekuensi olahraga
           </label>
 
           <select
@@ -93,14 +93,14 @@ function LifestyleStep({ form, onChange }) {
             onChange={onChange}
             className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
           >
-            <option value="0">No exercise</option>
-            <option value="1">1 day / week</option>
-            <option value="2">2 days / week</option>
-            <option value="3">3 days / week</option>
-            <option value="4">4 days / week</option>
-            <option value="5">5 days / week</option>
-            <option value="6">6 days / week</option>
-            <option value="7">Every day</option>
+            <option value="0">Tidak berolahraga</option>
+            <option value="1">1 hari / minggu</option>
+            <option value="2">2 hari / minggu</option>
+            <option value="3">3 hari / minggu</option>
+            <option value="4">4 hari / minggu</option>
+            <option value="5">5 hari / minggu</option>
+            <option value="6">6 hari / minggu</option>
+            <option value="7">Setiap hari</option>
           </select>
         </div>
       </div>
@@ -108,7 +108,7 @@ function LifestyleStep({ form, onChange }) {
       {Number(form.exerciseFrequency) > 0 && (
         <div>
           <label className="mb-2 block text-sm font-medium text-dark">
-            Exercise duration
+            Durasi olahraga
           </label>
 
           <div className="relative">
@@ -121,7 +121,7 @@ function LifestyleStep({ form, onChange }) {
             />
 
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">
-              min
+              mnt
             </span>
           </div>
         </div>
@@ -130,11 +130,11 @@ function LifestyleStep({ form, onChange }) {
       <label className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 p-4">
         <div>
           <span className="block text-sm font-medium text-dark">
-            Include prayer time
+            Sertakan waktu ibadah
           </span>
 
           <span className="mt-1 block text-xs text-muted">
-            Reserve space for prayer in your daily flow.
+            Sisihkan waktu sholat dalam alur harianmu.
           </span>
         </div>
 

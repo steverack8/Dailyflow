@@ -62,7 +62,7 @@ export async function handler(event) {
       },
       body: JSON.stringify({
         success: false,
-        message: "Method not allowed.",
+        message: "Metode tidak diizinkan.",
       }),
     }
   }
@@ -80,7 +80,7 @@ export async function handler(event) {
         },
         body: JSON.stringify({
           success: false,
-          message: "Prompt is required.",
+          message: "Prompt wajib diisi.",
         }),
       }
     }
@@ -151,7 +151,7 @@ export async function handler(event) {
         success: false,
         error:
           error?.message ||
-          "Failed to generate daily plan.",
+          "Gagal membuat rencana harian.",
       }),
     }
   }

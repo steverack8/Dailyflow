@@ -12,7 +12,7 @@ function Footer() {
           />
 
           <span className="text-sm text-slate-500">
-            © 2026 Dailyflow. Personal routine & time planning.
+            © 2026 Dailyflow. Rutinitas pribadi & perencanaan waktu.
           </span>
         </div>
 
@@ -21,35 +21,35 @@ function Footer() {
             href="#features"
             className="transition-colors hover:text-dark"
           >
-            Product
+            Produk
           </a>
 
           <a
             href="#how-it-works"
             className="transition-colors hover:text-dark"
           >
-            How it works
+            Cara kerja
           </a>
 
           <a
             href="#features"
             className="transition-colors hover:text-dark"
           >
-            Features
+            Fitur
           </a>
 
           <a
             href="#"
             className="transition-colors hover:text-dark"
           >
-            Privacy
+            Privasi
           </a>
 
           <a
             href="#"
             className="transition-colors hover:text-dark"
           >
-            Terms
+            Ketentuan
           </a>
         </div>
       </div>

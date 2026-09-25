@@ -1,7 +1,7 @@
-function MaterialIcon({ children, className = "" }) {
+function MaterialIcon({ children, name, className = "" }) {
   return (
     <span className={`material-symbols-outlined ${className}`}>
-      {children}
+      {children ?? name}
     </span>
   )
 }

@@ -6,13 +6,13 @@ function DynamicPlanning() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-dark">
-            Plans change. Your flow can too.
+            Rencana berubah. Alurmu juga bisa.
           </h2>
 
           <p className="mt-3 text-base text-muted">
-            DailyFlow is designed to adapt when your day changes, helping you
-            reorganize flexible activities without disturbing important
-            commitments.
+            DailyFlow dirancang untuk beradaptasi ketika harimu berubah,
+            membantumu menata ulang aktivitas fleksibel tanpa mengganggu
+            komitmen penting.
           </p>
         </div>
 
@@ -24,11 +24,11 @@ function DynamicPlanning() {
                 warning
               </MaterialIcon>
 
-              Trigger Scenario
+              Skenario Pemicu
             </div>
 
             <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-              User skips exercise at 18:00
+              Pengguna melewatkan olahraga pukul 18:00
             </span>
           </div>
 
@@ -40,19 +40,19 @@ function DynamicPlanning() {
               </MaterialIcon>
 
               <span className="text-xs font-medium text-blue-900 sm:text-sm">
-                Your evening has been adjusted.
+                Malam harimu telah disesuaikan.
               </span>
             </div>
 
             <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-              Auto-Rebalanced
+              Seimbang Otomatis
             </span>
           </div>
 
           {/* Updated Schedule */}
           <div className="space-y-2.5">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Updated Remaining Schedule
+              Jadwal Sisa yang Diperbarui
             </span>
 
             <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-xs">
@@ -62,12 +62,12 @@ function DynamicPlanning() {
                 </span>
 
                 <span className="font-medium text-slate-800">
-                  Buffer & Rest Period
+                  Buffer & Waktu Istirahat
                 </span>
               </div>
 
               <span className="text-slate-500">
-                Expanded rest
+                Istirahat diperluas
               </span>
             </div>
 
@@ -78,12 +78,12 @@ function DynamicPlanning() {
                 </span>
 
                 <span className="font-medium text-slate-800">
-                  Reading & Study
+                  Membaca & Belajar
                 </span>
               </div>
 
               <span className="text-primary">
-                Shifted earlier
+                Dimajukan lebih awal
               </span>
             </div>
 
@@ -94,12 +94,12 @@ function DynamicPlanning() {
                 </span>
 
                 <span className="font-medium text-slate-800">
-                  Personal Time
+                  Waktu Pribadi
                 </span>
               </div>
 
               <span className="text-emerald-600">
-                Preserved intact
+                Tetap utuh
               </span>
             </div>
           </div>
