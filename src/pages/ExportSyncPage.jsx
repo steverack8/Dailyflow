@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react"
 
 import MaterialIcon from "../components/ui/MaterialIcon"
+import { useToast } from "../components/ui/ToastProvider"
 import { useAuth } from "../contexts/AuthContext"
 import { getLatestDailyPlan } from "../services/firestoreService"
 
 function ExportSyncPage() {
   const { user } = useAuth()
+  const { toast } = useToast()
 
   const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [message, setMessage] = useState("")
 
   useEffect(() => {
     let mounted = true
@@ -23,7 +23,6 @@ function ExportSyncPage() {
 
       try {
         setLoading(true)
-        setError("")
 
         const latestPlan =
           await getLatestDailyPlan(user.uid)
@@ -38,7 +37,7 @@ function ExportSyncPage() {
         )
 
         if (mounted) {
-          setError(
+          toast.error(
             "Gagal mengambil jadwal DailyFlow."
           )
         }
@@ -54,7 +53,7 @@ function ExportSyncPage() {
     return () => {
       mounted = false
     }
-  }, [user?.uid])
+  }, [user?.uid, toast])
 
   const activities = useMemo(() => {
     if (!plan?.schedule) {
@@ -83,8 +82,7 @@ function ExportSyncPage() {
     try {
       await navigator.clipboard.writeText(text)
 
-      setError("")
-      setMessage(
+      toast.success(
         "Daftar aktivitas berhasil disalin."
       )
     } catch (copyError) {
@@ -93,8 +91,7 @@ function ExportSyncPage() {
         copyError
       )
 
-      setMessage("")
-      setError(
+      toast.error(
         "Gagal menyalin daftar aktivitas."
       )
     }
@@ -147,8 +144,7 @@ END:VCALENDAR`
       "text/calendar;charset=utf-8"
     )
 
-    setError("")
-    setMessage(
+    toast.success(
       "File DailyFlow-Routine.ics berhasil dibuat."
     )
   }
@@ -177,8 +173,7 @@ END:VCALENDAR`
       "text/plain;charset=utf-8"
     )
 
-    setError("")
-    setMessage(
+    toast.success(
       "File DailyFlow-Routine.txt berhasil dibuat."
     )
   }
@@ -201,20 +196,6 @@ END:VCALENDAR`
             tambahkan ke aplikasi kalender pilihanmu.
           </p>
         </div>
-
-        {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <MaterialIcon name="error" />
-            <p>{error}</p>
-          </div>
-        )}
-
-        {message && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-            <MaterialIcon name="check_circle" />
-            <p>{message}</p>
-          </div>
-        )}
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">

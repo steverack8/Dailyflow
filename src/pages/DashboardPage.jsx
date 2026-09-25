@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import DashboardSchedule from "../components/dashboard/DashboardSchedule"
 import PlanModal from "../components/planner/PlanModal"
 import MaterialIcon from "../components/ui/MaterialIcon"
+import { useToast } from "../components/ui/ToastProvider"
 import { useAuth } from "../contexts/AuthContext"
 import { generateDailyPlan } from "../services/aiService"
 import {
@@ -14,6 +15,7 @@ import { buildInitialPlanPrompt } from "../prompts/initialPlanPrompt"
 
 function DashboardPage() {
   const { user } = useAuth()
+  const { toast } = useToast()
 
   const [plan, setPlan] = useState(null)
   const [form, setForm] = useState(null)
@@ -26,8 +28,6 @@ function DashboardPage() {
   const [isGenerating, setIsGenerating] =
     useState(false)
 
-  const [error, setError] = useState("")
-
   useEffect(() => {
     let isMounted = true
 
@@ -38,7 +38,6 @@ function DashboardPage() {
 
       try {
         setIsLoading(true)
-        setError("")
 
         const latestPlan =
           await getLatestDailyPlan(user.uid)
@@ -63,7 +62,7 @@ function DashboardPage() {
         )
 
         if (isMounted) {
-          setError(
+          toast.error(
             "Gagal memuat rutinitas harian."
           )
         }
@@ -79,7 +78,7 @@ function DashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [user?.uid])
+  }, [user?.uid, toast])
 
   const handleGenerate = async (formData) => {
     if (!user?.uid) {
@@ -88,7 +87,6 @@ function DashboardPage() {
 
     try {
       setIsGenerating(true)
-      setError("")
 
       const prompt =
         buildInitialPlanPrompt(formData)
@@ -141,13 +139,16 @@ function DashboardPage() {
       setForm(formData)
       setHasPlan(true)
       setIsPlanModalOpen(false)
+      toast.success(
+        "Rutinitas harian berhasil dibuat."
+      )
     } catch (generateError) {
       console.error(
         "Failed to generate daily plan:",
         generateError
       )
 
-      setError(
+      toast.error(
         generateError?.message ||
           "Gagal membuat rutinitas harian. Silakan coba lagi."
       )
@@ -165,8 +166,6 @@ function DashboardPage() {
     }
 
     try {
-      setError("")
-
       const currentSchedule =
         Array.isArray(plan.schedule)
           ? plan.schedule
@@ -202,13 +201,17 @@ function DashboardPage() {
         ...currentPlan,
         schedule: updatedSchedule,
       }))
+
+      toast.success(
+        "Blok jadwal berhasil diperbarui."
+      )
     } catch (updateError) {
       console.error(
         "Failed to update schedule:",
         updateError
       )
 
-      setError(
+      toast.error(
         "Gagal memperbarui blok jadwal."
       )
     }
@@ -222,8 +225,6 @@ function DashboardPage() {
     }
 
     try {
-      setError("")
-
       const currentSchedule =
         Array.isArray(plan.schedule)
           ? plan.schedule
@@ -253,13 +254,17 @@ function DashboardPage() {
         ...currentPlan,
         schedule: updatedSchedule,
       }))
+
+      toast.success(
+        "Aktivitas berhasil ditambahkan."
+      )
     } catch (addError) {
       console.error(
         "Failed to add schedule:",
         addError
       )
 
-      setError(
+      toast.error(
         "Gagal menambahkan aktivitas."
       )
     }
@@ -273,8 +278,6 @@ function DashboardPage() {
     }
 
     try {
-      setError("")
-
       const currentSchedule =
         Array.isArray(plan.schedule)
           ? plan.schedule
@@ -303,20 +306,23 @@ function DashboardPage() {
         ...currentPlan,
         schedule: updatedSchedule,
       }))
+
+      toast.success(
+        "Blok jadwal berhasil dihapus."
+      )
     } catch (deleteError) {
       console.error(
         "Failed to delete schedule:",
         deleteError
       )
 
-      setError(
+      toast.error(
         "Gagal menghapus blok jadwal."
       )
     }
   }
 
   const handleOpenPlanner = () => {
-    setError("")
     setIsPlanModalOpen(true)
   }
 
@@ -367,16 +373,6 @@ function DashboardPage() {
             Atur Ulang Jadwal
           </button>
         </div>
-
-        {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <MaterialIcon className="mt-0.5 text-[19px]">
-              error
-            </MaterialIcon>
-
-            <p>{error}</p>
-          </div>
-        )}
 
         {!hasPlan ? (
           <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">

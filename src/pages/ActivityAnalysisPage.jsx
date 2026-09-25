@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 
 import MaterialIcon from "../components/ui/MaterialIcon"
+import { useToast } from "../components/ui/ToastProvider"
 import { useAuth } from "../contexts/AuthContext"
 import { getLatestDailyPlan } from "../services/firestoreService"
 import { analyzeDailyPlan } from "../services/aiService"
@@ -116,6 +117,7 @@ function getCategoryConfig(category) {
 
 function ActivityAnalysisPage() {
   const { user } = useAuth()
+  const { toast } = useToast()
 
   const [plan, setPlan] = useState(null)
   const [isLoading, setIsLoading] =
@@ -126,8 +128,6 @@ function ActivityAnalysisPage() {
 
   const [analysis, setAnalysis] =
     useState(null)
-
-  const [error, setError] = useState("")
 
   useEffect(() => {
     let isMounted = true
@@ -140,7 +140,6 @@ function ActivityAnalysisPage() {
 
       try {
         setIsLoading(true)
-        setError("")
 
         const latestPlan =
           await getLatestDailyPlan(
@@ -159,7 +158,7 @@ function ActivityAnalysisPage() {
         )
 
         if (isMounted) {
-          setError(
+          toast.error(
             "Gagal memuat rutinitas harian."
           )
         }
@@ -175,7 +174,7 @@ function ActivityAnalysisPage() {
     return () => {
       isMounted = false
     }
-  }, [user?.uid])
+  }, [user?.uid, toast])
 
   const schedule = useMemo(() => {
     if (!Array.isArray(plan?.schedule)) {
@@ -251,7 +250,6 @@ function ActivityAnalysisPage() {
 
     try {
       setIsAnalyzing(true)
-      setError("")
 
       const prompt =
         buildAnalysisPrompt({
@@ -264,13 +262,16 @@ function ActivityAnalysisPage() {
         await analyzeDailyPlan(prompt)
 
       setAnalysis(result)
+      toast.success(
+        "Analisis aktivitas berhasil dibuat."
+      )
     } catch (analysisError) {
       console.error(
         "Failed to analyze daily plan:",
         analysisError
       )
 
-      setError(
+      toast.error(
         analysisError?.message ||
           "Gagal menganalisis jadwal. Silakan coba lagi."
       )
@@ -363,16 +364,6 @@ function ActivityAnalysisPage() {
               : "Analisis dengan AI"}
           </button>
         </div>
-
-        {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <MaterialIcon className="mt-0.5 text-[19px]">
-              error
-            </MaterialIcon>
-
-            <p>{error}</p>
-          </div>
-        )}
 
         {/* Overview */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

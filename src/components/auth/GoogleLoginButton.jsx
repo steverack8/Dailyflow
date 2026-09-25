@@ -1,23 +1,23 @@
 import { useState } from "react"
 
+import { useToast } from "../ui/ToastProvider"
 import { useAuth } from "../../contexts/AuthContext"
 
 export default function GoogleLoginButton() {
   const { signInWithGoogle } = useAuth()
+  const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
 
   async function handleLogin() {
     setLoading(true)
-    setError("")
 
     try {
       await signInWithGoogle()
     } catch (error) {
       console.error("Google login error:", error)
 
-      setError(
+      toast.error(
         error?.message ||
           "Gagal masuk dengan Google."
       )
@@ -61,12 +61,6 @@ export default function GoogleLoginButton() {
           ? "Menghubungkan..."
           : "Lanjutkan dengan Google"}
       </button>
-
-      {error && (
-        <p className="mt-3 text-center text-sm text-red-600">
-          {error}
-        </p>
-      )}
     </div>
   )
 }

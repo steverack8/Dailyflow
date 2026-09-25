@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom"
 
 import logo from "../../assets/logo.png"
 import MaterialIcon from "../ui/MaterialIcon"
+import { useToast } from "../ui/ToastProvider"
 import { useAuth } from "../../contexts/AuthContext"
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
 function AppNavbar() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { toast } = useToast()
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -37,6 +39,7 @@ function AppNavbar() {
       navigate("/", { replace: true })
     } catch (error) {
       console.error("Logout error:", error)
+      toast.error("Gagal keluar. Silakan coba lagi.")
       setIsLoggingOut(false)
     }
   }
