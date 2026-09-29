@@ -16,7 +16,7 @@ const navItems = [
     to: "/activity-analysis",
   },
   {
-    label: "Ekspor & Sinkronisasi",
+    label: "Sinkron Google Tasks",
     to: "/export-sync",
   },
 ]
@@ -111,17 +111,10 @@ function AppNavbar() {
               aria-label="Menu pengguna"
               aria-expanded={isMenuOpen}
             >
-              {userPhoto ? (
-                <img
-                  src={userPhoto}
-                  alt={userName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <MaterialIcon className="text-[19px] text-slate-600">
-                  person
-                </MaterialIcon>
-              )}
+              <Avatar
+                photoUrl={userPhoto}
+                name={userName}
+              />
             </button>
 
             {/* Dropdown */}
@@ -131,17 +124,10 @@ function AppNavbar() {
                 <div className="border-b border-slate-100 px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100">
-                      {userPhoto ? (
-                        <img
-                          src={userPhoto}
-                          alt={userName}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <MaterialIcon className="text-[19px] text-slate-600">
-                          person
-                        </MaterialIcon>
-                      )}
+                      <Avatar
+                        photoUrl={userPhoto}
+                        name={userName}
+                      />
                     </div>
 
                     <div className="min-w-0">
@@ -181,6 +167,30 @@ function AppNavbar() {
         </div>
       </div>
     </header>
+  )
+}
+
+function Avatar({ photoUrl, name }) {
+  const [failed, setFailed] = useState(false)
+
+  if (photoUrl && !failed) {
+    return (
+      <img
+        src={photoUrl}
+        alt={name}
+        className="h-full w-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+
+  const initial =
+    (name || "P").trim().charAt(0).toUpperCase() || "P"
+
+  return (
+    <span className="text-sm font-semibold text-slate-600">
+      {initial}
+    </span>
   )
 }
 

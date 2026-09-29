@@ -4,6 +4,20 @@ import MaterialIcon from "../components/ui/MaterialIcon"
 import { useToast } from "../components/ui/ToastProvider"
 import { useAuth } from "../contexts/AuthContext"
 import { getLatestDailyPlan } from "../services/firestoreService"
+import {
+  getGoogleTasksClientId,
+  getSavedGoogleTasksConnection,
+  requestGoogleTasksToken,
+  saveGoogleTasksConnection,
+  syncScheduleToGoogleTasks,
+} from "../services/googleTasksService"
+
+const SYNC_RANGE_OPTIONS = [
+  { value: 1, label: "Hari ini" },
+  { value: 7, label: "7 hari" },
+  { value: 30, label: "30 hari" },
+  { value: 90, label: "90 hari" },
+]
 
 function ExportSyncPage() {
   const { user } = useAuth()
@@ -11,6 +25,15 @@ function ExportSyncPage() {
 
   const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const [tokenState, setTokenState] = useState({
+    uid: null,
+    token: null,
+  })
+  const [connecting, setConnecting] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncProgress, setSyncProgress] = useState(null)
+  const [syncDays, setSyncDays] = useState(1)
 
   useEffect(() => {
     let mounted = true
@@ -67,115 +90,147 @@ function ExportSyncPage() {
     )
   }, [plan])
 
-  async function handleCopyText() {
-    if (activities.length === 0) {
+  useEffect(() => {
+    if (!syncing) {
+      return undefined
+    }
+
+    const previousOverflow = document.body.style.overflow
+
+    document.body.style.overflow = "hidden"
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [syncing])
+
+  const userId = user?.uid
+
+  const savedConnection = useMemo(
+    () =>
+      userId
+        ? getSavedGoogleTasksConnection(userId)
+        : null,
+    [userId]
+  )
+
+  const googleToken =
+    tokenState.uid === userId ? tokenState.token : null
+
+  const connectionEmail =
+    googleToken?.email || savedConnection?.email || null
+
+  const isConnected = Boolean(
+    googleToken?.accessToken || savedConnection
+  )
+
+  const clientIdConfigured = Boolean(
+    getGoogleTasksClientId()
+  )
+
+  async function handleConnectGoogle() {
+    if (connecting) {
       return
     }
 
-    const text = activities
-      .map(
-        (activity) =>
-          `${activity.startTime} - ${activity.endTime}: ${activity.title}`
-      )
-      .join("\n")
+    setConnecting(true)
 
     try {
-      await navigator.clipboard.writeText(text)
+      const token = await requestGoogleTasksToken({
+        loginHint: user?.email || undefined,
+        uid: user?.uid || undefined,
+      })
+
+      setTokenState({
+        uid: user?.uid || null,
+        token,
+      })
+
+      if (user?.uid) {
+        saveGoogleTasksConnection(
+          user.uid,
+          token.email || user.email || ""
+        )
+      }
 
       toast.success(
-        "Daftar aktivitas berhasil disalin."
+        token.email
+          ? `Terhubung sebagai ${token.email}.`
+          : "Akun Google berhasil terhubung ke Google Tasks."
       )
-    } catch (copyError) {
+    } catch (connectError) {
       console.error(
-        "Failed to copy DailyFlow schedule:",
-        copyError
+        "Failed to connect Google Tasks:",
+        connectError
       )
 
       toast.error(
-        "Gagal menyalin daftar aktivitas."
+        connectError?.message ||
+          "Gagal terhubung ke Google Tasks."
       )
+    } finally {
+      setConnecting(false)
     }
   }
 
-  function handleDownloadICS() {
-    if (activities.length === 0) {
+  async function handleSyncToGoogleTasks() {
+    if (syncing || activities.length === 0) {
       return
     }
 
-    const date = getTodayDate()
+    setSyncing(true)
 
-    const events = activities
-      .map((activity, index) => {
-        const uid =
-          activity.id ||
-          `${date}-${activity.startTime}-${index}`
+    try {
+      let token = googleToken
 
-        return `BEGIN:VEVENT
-UID:${escapeICSValue(uid)}@dailyflow
-DTSTAMP:${formatICSDateTimeUTC(new Date())}
-SUMMARY:${escapeICSValue(activity.title)}
-DESCRIPTION:${escapeICSValue(
-          activity.description || ""
-        )}
-DTSTART;TZID=Asia/Jakarta:${formatICSDateTime(
-          date,
-          activity.startTime
-        )}
-DTEND;TZID=Asia/Jakarta:${formatICSDateTime(
-          date,
-          activity.endTime
-        )}
-END:VEVENT`
+      if (
+        !token?.accessToken ||
+        token.expiresAt <= Date.now()
+      ) {
+        token = await requestGoogleTasksToken({
+          loginHint: user?.email || undefined,
+          uid: user?.uid || undefined,
+        })
+
+        setTokenState({
+          uid: user?.uid || null,
+          token,
+        })
+      }
+
+      const result = await syncScheduleToGoogleTasks({
+        token: token.accessToken,
+        activities,
+        date: getTodayDate(),
+        days: syncDays,
+        onProgress: (current, total) =>
+          setSyncProgress({ current, total }),
       })
-      .join("\r\n")
 
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//DailyFlow//Routine//ID
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-TIMEZONE:Asia/Jakarta
-${events}
-END:VCALENDAR`
+      if (result.verified === 0) {
+        toast.error(
+          "Sinkronisasi tidak terbaca di Google Tasks. Coba lagi."
+        )
+        return
+      }
 
-    downloadFile(
-      icsContent,
-      "DailyFlow-Routine.ics",
-      "text/calendar;charset=utf-8"
-    )
+      toast.success(
+        `${result.verified} tugas (${result.days} hari) tersimpan di daftar "${result.listTitle}". Buka Google Tasks lalu pilih daftar "${result.listTitle}".`
+      )
+    } catch (syncError) {
+      console.error(
+        "Failed to sync to Google Tasks:",
+        syncError
+      )
 
-    toast.success(
-      "File DailyFlow-Routine.ics berhasil dibuat."
-    )
-  }
-
-  function handleDownloadText() {
-    if (activities.length === 0) {
-      return
+      toast.error(
+        syncError?.message ||
+          "Gagal sinkron ke Google Tasks."
+      )
+    } finally {
+      setSyncing(false)
+      setSyncProgress(null)
     }
-
-    const text = [
-      "Rutinitas DailyFlow",
-      "",
-      ...activities.map(
-        (activity) =>
-          `${activity.startTime} - ${activity.endTime} | ${activity.title}${
-            activity.description
-              ? `\n${activity.description}`
-              : ""
-          }`
-      ),
-    ].join("\n")
-
-    downloadFile(
-      text,
-      "DailyFlow-Routine.txt",
-      "text/plain;charset=utf-8"
-    )
-
-    toast.success(
-      "File DailyFlow-Routine.txt berhasil dibuat."
-    )
   }
 
   return (
@@ -183,84 +238,178 @@ END:VCALENDAR`
       <div className="mx-auto max-w-6xl px-6 py-8 lg:px-8">
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-2 text-sm font-medium text-blue-600">
-            <MaterialIcon name="download" />
-            Ekspor
+            <MaterialIcon name="sync" />
+            Sinkronisasi
           </div>
 
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Ekspor DailyFlow
+            Sinkron ke Google Tasks
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Simpan jadwal DailyFlow atau
-            tambahkan ke aplikasi kalender pilihanmu.
+            Sinkronkan jadwal DailyFlow kamu ke
+            Google Tasks.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 p-6">
-              <h2 className="text-base font-semibold text-slate-900">
-                Jadwal DailyFlow
-              </h2>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">
+                    Jadwal DailyFlow
+                  </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Ekspor jadwal yang sudah kamu buat.
-              </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Kirim jadwal hari ini ke daftar
+                    tugas Google kamu.
+                  </p>
+                </div>
+
+                <span
+                  className={`max-w-[220px] shrink-0 truncate rounded-full border px-2.5 py-1 text-xs font-medium ${
+                    isConnected
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {isConnected
+                    ? connectionEmail
+                      ? `Terhubung · ${connectionEmail}`
+                      : "Terhubung"
+                    : "Belum terhubung"}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-3 p-6">
+              <div>
+                <p className="mb-2 text-xs font-medium text-slate-500">
+                  Rentang sinkronisasi
+                </p>
+
+                <div className="flex gap-2">
+                  {SYNC_RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setSyncDays(option.value)
+                      }
+                      disabled={syncing}
+                      className={`flex-1 rounded-lg border px-2 py-2 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                        syncDays === option.value
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <button
                 type="button"
-                onClick={handleDownloadICS}
-                disabled={activities.length === 0}
-                className="flex w-full items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={
+                  isConnected
+                    ? handleSyncToGoogleTasks
+                    : handleConnectGoogle
+                }
+                disabled={
+                  connecting ||
+                  syncing ||
+                  !clientIdConfigured ||
+                  (isConnected &&
+                    activities.length === 0)
+                }
+                className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  isConnected
+                    ? "border-emerald-600 bg-emerald-600 text-white hover:border-emerald-700 hover:bg-emerald-700"
+                    : "border-blue-600 bg-blue-600 text-white hover:border-blue-700 hover:bg-blue-700"
+                }`}
               >
                 <MaterialIcon
-                  name="calendar_month"
-                  className="text-blue-600"
+                  name={
+                    syncing
+                      ? "progress_activity"
+                      : isConnected
+                        ? "sync"
+                        : "login"
+                  }
+                  className="text-white"
                 />
 
                 <span>
                   <span className="block">
-                    Unduh .ICS
+                    {connecting
+                      ? "Menghubungkan..."
+                      : syncing
+                        ? "Menyinkronkan..."
+                        : isConnected
+                          ? "Sinkronkan ke Google Tasks"
+                          : "Login & Hubungkan Google"}
                   </span>
 
-                  <span className="mt-0.5 block text-xs font-normal text-blue-600">
-                    Import ke Google Calendar,
-                    Apple Calendar, atau aplikasi
-                    kalender lainnya.
+                  <span
+                    className={`mt-0.5 block text-xs font-normal ${
+                      isConnected
+                        ? "text-emerald-100"
+                        : "text-blue-100"
+                    }`}
+                  >
+                    {syncing && syncProgress
+                      ? `Mengirim ${syncProgress.current} dari ${syncProgress.total} aktivitas...`
+                      : isConnected
+                        ? `Kirim ${activities.length * syncDays} aktivitas (${syncDays === 1 ? "hari ini" : `${syncDays} hari`}) ke daftar "DailyFlow".`
+                        : "Login dengan akun Google dan izinkan akses Tugas."}
                   </span>
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={handleCopyText}
-                disabled={activities.length === 0}
-                className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              <a
+                href="https://tasks.google.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 <MaterialIcon
-                  name="content_copy"
+                  name="open_in_new"
                   className="text-slate-500"
                 />
 
-                <span>Salin Daftar Aktivitas</span>
-              </button>
+                <span>Buka Google Tasks</span>
+              </a>
 
-              <button
-                type="button"
-                onClick={handleDownloadText}
-                disabled={activities.length === 0}
-                className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <div className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <MaterialIcon
-                  name="description"
-                  className="text-slate-500"
+                  name="info"
+                  className="text-slate-400"
                 />
 
-                <span>Unduh .TXT</span>
-              </button>
+                <p className="text-xs leading-5 text-slate-500">
+                  Di Google Tasks, pilih daftar
+                  "DailyFlow" lewat menu daftar di
+                  kiri. Pastikan akun Google yang dibuka
+                  sama dengan akun yang dipilih saat
+                  sinkron.
+                </p>
+              </div>
+
+              {!clientIdConfigured && (
+                <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                  <MaterialIcon
+                    name="warning"
+                    className="text-amber-600"
+                  />
+
+                  <p className="text-xs leading-5 text-amber-700">
+                    Fitur sinkron Google Tasks belum
+                    aktif. Silakan coba lagi nanti.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-slate-200 px-6 py-5">
@@ -271,9 +420,9 @@ END:VCALENDAR`
                 />
 
                 <p className="text-xs leading-5 text-slate-500">
-                  File .ICS dapat diimpor ke berbagai
-                  aplikasi kalender tanpa memberikan
-                  DailyFlow akses ke kalender pribadimu.
+                  Sinkronisasi hanya menulis ke daftar
+                  tugas "DailyFlow" di Google Tasks dan
+                  tidak menyentuh kalender kamu.
                 </p>
               </div>
             </div>
@@ -282,32 +431,32 @@ END:VCALENDAR`
           <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 p-6">
               <h2 className="text-base font-semibold text-slate-900">
-                Cara menggunakan .ICS
+                Cara sinkron ke Google Tasks
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Gunakan file kalender untuk memasukkan
-                jadwal DailyFlow ke kalender.
+                Tiga langkah untuk memindahkan jadwal
+                DailyFlow ke Google Tasks.
               </p>
             </div>
 
             <div className="space-y-4 p-6">
               <Step
                 number="1"
-                title="Unduh .ICS"
-                description="Unduh file jadwal dari DailyFlow."
+                title="Hubungkan akun Google"
+                description="Pilih akun Google dan izinkan akses ke Tugas."
               />
 
               <Step
                 number="2"
-                title="Buka aplikasi kalender"
-                description="Gunakan Google Calendar atau aplikasi kalender lainnya."
+                title="Siapkan jadwal"
+                description="Pastikan jadwal DailyFlow sudah tersedia di daftar aktivitas."
               />
 
               <Step
                 number="3"
-                title="Impor file"
-                description="Pilih file DailyFlow-Routine.ics untuk menambahkan jadwal."
+                title="Klik Sinkronkan"
+                description="Aktivitas muncul di daftar tugas DailyFlow pada aplikasi Google Tasks."
               />
             </div>
           </section>
@@ -323,7 +472,9 @@ END:VCALENDAR`
               <p className="mt-1 text-sm text-slate-500">
                 {loading
                   ? "Memuat jadwal..."
-                  : `${activities.length} aktivitas dari jadwal terbaru`}
+                  : syncing
+                    ? "Menyinkronkan ke Google Tasks..."
+                    : `${activities.length} aktivitas dari jadwal terbaru`}
               </p>
             </div>
 
@@ -332,7 +483,7 @@ END:VCALENDAR`
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="relative p-6">
             {loading ? (
               <div className="flex min-h-40 items-center justify-center">
                 <MaterialIcon
@@ -355,7 +506,13 @@ END:VCALENDAR`
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div
+                className={`divide-y divide-slate-100 ${
+                  syncing
+                    ? "pointer-events-none opacity-40"
+                    : ""
+                }`}
+              >
                 {activities.map(
                   (activity, index) => (
                     <ActivityRow
@@ -372,6 +529,53 @@ END:VCALENDAR`
           </div>
         </section>
       </div>
+
+      {syncing && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-busy="true"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xl">
+            <MaterialIcon
+              name="progress_activity"
+              className="text-[32px] text-blue-600"
+            />
+
+            <p className="mt-3 text-base font-semibold text-slate-900">
+              Menyinkronkan ke Google Tasks
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {syncProgress
+                ? `Mengirim ${syncProgress.current} dari ${syncProgress.total} aktivitas...`
+                : "Mohon tunggu sebentar..."}
+            </p>
+
+            <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                style={{
+                  width: `${
+                    syncProgress?.total
+                      ? Math.round(
+                          (syncProgress.current /
+                            syncProgress.total) *
+                            100
+                        )
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+
+            <p className="mt-4 text-xs text-slate-400">
+              Jangan tutup atau pindah halaman.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -489,72 +693,6 @@ function getTodayDate() {
   )
 
   return formatter.format(now)
-}
-
-function formatICSDateTime(date, time) {
-  return `${date.replace(
-    /-/g,
-    ""
-  )}T${time.replace(":", "")}00`
-}
-
-function formatICSDateTimeUTC(date) {
-  const year = date.getUTCFullYear()
-
-  const month = String(
-    date.getUTCMonth() + 1
-  ).padStart(2, "0")
-
-  const day = String(
-    date.getUTCDate()
-  ).padStart(2, "0")
-
-  const hours = String(
-    date.getUTCHours()
-  ).padStart(2, "0")
-
-  const minutes = String(
-    date.getUTCMinutes()
-  ).padStart(2, "0")
-
-  const seconds = String(
-    date.getUTCSeconds()
-  ).padStart(2, "0")
-
-  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
-}
-
-function escapeICSValue(value) {
-  return String(value || "")
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\r?\n/g, "\\n")
-}
-
-function downloadFile(
-  content,
-  filename,
-  type
-) {
-  const blob = new Blob([content], {
-    type,
-  })
-
-  const url =
-    window.URL.createObjectURL(blob)
-
-  const link =
-    document.createElement("a")
-
-  link.href = url
-  link.download = filename
-
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-
-  window.URL.revokeObjectURL(url)
 }
 
 export default ExportSyncPage
