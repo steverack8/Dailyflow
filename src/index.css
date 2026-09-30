@@ -44,6 +44,73 @@ body {
   animation: toast-in 0.2s ease-out;
 }
 
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+@keyframes timeline-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.timeline-item-in {
+  animation: timeline-item-in 0.4s ease-out both;
+}
+
+@keyframes timeline-sheen {
+  0%,
+  55% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.timeline-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(37, 99, 235, 0.07) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  animation: timeline-sheen 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .fade-in-up,
+  .timeline-item-in,
+  .timeline-sheen::after {
+    animation: none;
+  }
+}
+
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   font-weight: normal;

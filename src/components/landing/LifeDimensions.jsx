@@ -45,11 +45,11 @@ function LifeDimensions() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-dark">
-            Bukan cuma soal pekerjaan. Atur waktu untuk semua yang kamu lakukan.
+            Atur waktu untuk hal-hal yang kamu lakukan.
           </h2>
 
           <p className="mt-3 text-base text-muted">
-            Atur waktu untuk kerja, tidur, olahraga, makan, belajar, dan hal-hal lain yang ingin kamu lakukan.
+            Mulai dari kerja dan tidur sampai olahraga, makan, belajar, dan waktu untuk diri sendiri.
           </p>
         </div>
 
