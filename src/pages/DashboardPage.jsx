@@ -11,7 +11,7 @@ import {
   saveDailyPlan,
   updateDailyPlan,
 } from "../services/firestoreService"
-import { buildInitialPlanPrompt } from "../prompts/initialPlanPrompt"
+import { buildInitialPlanPrompt } from "../prompts/initialPlan"
 
 function DashboardPage() {
   const { user } = useAuth()
@@ -217,6 +217,38 @@ function DashboardPage() {
     }
   }
 
+  const handleReorderSchedule = async (
+    reorderedSchedule
+  ) => {
+    if (!user?.uid || !plan?.id) {
+      return
+    }
+
+    try {
+      await updateDailyPlan(user.uid, plan.id, {
+        schedule: reorderedSchedule,
+      })
+
+      setPlan((currentPlan) => ({
+        ...currentPlan,
+        schedule: reorderedSchedule,
+      }))
+
+      toast.success(
+        "Urutan jadwal diperbarui, jam otomatis menyesuaikan."
+      )
+    } catch (reorderError) {
+      console.error(
+        "Failed to reorder schedule:",
+        reorderError
+      )
+
+      toast.error(
+        "Gagal mengubah urutan jadwal."
+      )
+    }
+  }
+
   const handleAddSchedule = async (
     scheduleData
   ) => {
@@ -413,6 +445,9 @@ function DashboardPage() {
             onAddSchedule={handleAddSchedule}
             onDeleteSchedule={
               handleDeleteSchedule
+            }
+            onReorderSchedule={
+              handleReorderSchedule
             }
           />
         )}

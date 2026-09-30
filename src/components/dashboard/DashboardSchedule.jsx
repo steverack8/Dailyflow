@@ -23,6 +23,47 @@ function getDurationInMinutes(startTime, endTime) {
   return 24 * 60 - start + end
 }
 
+function minutesToTime(minutes) {
+  const normalized = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60)
+
+  const hours = Math.floor(normalized / 60)
+  const remainingMinutes = normalized % 60
+
+  return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}`
+}
+
+function reflowTimes(items) {
+  if (items.length === 0) {
+    return items
+  }
+
+  const anchor = items.reduce(
+    (earliest, item) =>
+      Math.min(earliest, timeToMinutes(item.startTime)),
+    24 * 60
+  )
+
+  let cursor = anchor
+
+  return items.map((item) => {
+    const duration = getDurationInMinutes(
+      item.startTime,
+      item.endTime
+    )
+
+    const startTime = minutesToTime(cursor)
+    const endTime = minutesToTime(cursor + duration)
+
+    cursor += duration
+
+    return {
+      ...item,
+      startTime,
+      endTime,
+    }
+  })
+}
+
 function formatHours(minutes) {
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
@@ -468,6 +509,7 @@ function DashboardSchedule({
   onUpdateSchedule,
   onAddSchedule,
   onDeleteSchedule,
+  onReorderSchedule,
 }) {
   const [editingId, setEditingId] =
     useState(null)
@@ -667,6 +709,31 @@ function DashboardSchedule({
     })
   }
 
+  const handleReorder = async (
+    currentIndex,
+    direction
+  ) => {
+    const targetIndex = currentIndex + direction
+
+    if (
+      targetIndex < 0 ||
+      targetIndex >= schedule.length
+    ) {
+      return
+    }
+
+    const reordered = [...schedule]
+
+    const [moved] = reordered.splice(
+      currentIndex,
+      1
+    )
+
+    reordered.splice(targetIndex, 0, moved)
+
+    await onReorderSchedule(reflowTimes(reordered))
+  }
+
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) {
       return
@@ -801,7 +868,7 @@ function DashboardSchedule({
           </div>
         ) : (
           <div className="space-y-3">
-            {schedule.map((item) => {
+            {schedule.map((item, itemIndex) => {
               const styles =
                 getScheduleStyles(
                   item.category
@@ -891,6 +958,45 @@ function DashboardSchedule({
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleReorder(
+                            itemIndex,
+                            -1
+                          )
+                        }
+                        disabled={
+                          itemIndex === 0
+                        }
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Naikkan urutan, jam menyesuaikan"
+                      >
+                        <MaterialIcon className="text-[19px]">
+                          arrow_upward
+                        </MaterialIcon>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleReorder(
+                            itemIndex,
+                            1
+                          )
+                        }
+                        disabled={
+                          itemIndex ===
+                          schedule.length - 1
+                        }
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Turunkan urutan, jam menyesuaikan"
+                      >
+                        <MaterialIcon className="text-[19px]">
+                          arrow_downward
+                        </MaterialIcon>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() =>

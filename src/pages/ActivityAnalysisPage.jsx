@@ -5,7 +5,7 @@ import { useToast } from "../components/ui/ToastProvider"
 import { useAuth } from "../contexts/AuthContext"
 import { getLatestDailyPlan } from "../services/firestoreService"
 import { analyzeDailyPlan } from "../services/aiService"
-import { buildAnalysisPrompt } from "../prompts/analysisPrompt"
+import { buildAnalysisPrompt } from "../prompts/analysis"
 
 const CATEGORY_CONFIG = {
   sleep: {
