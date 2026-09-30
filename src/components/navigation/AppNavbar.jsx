@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext"
 
 const navItems = [
   {
-    label: "Dasbor & Rencana",
+    label: "Dashboard",
     to: "/dashboard",
   },
   {

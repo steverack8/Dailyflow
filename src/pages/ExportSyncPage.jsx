@@ -237,13 +237,8 @@ function ExportSyncPage() {
     <div className="min-h-full bg-slate-50">
       <div className="mx-auto max-w-6xl px-6 py-8 lg:px-8">
         <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2 text-sm font-medium text-blue-600">
-            <MaterialIcon name="sync" />
-            Sinkronisasi
-          </div>
-
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Sinkron ke Google Tasks
+            Sinkronisasi ke Google Tasks
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
@@ -411,21 +406,6 @@ function ExportSyncPage() {
                 </div>
               )}
             </div>
-
-            <div className="border-t border-slate-200 px-6 py-5">
-              <div className="flex gap-3">
-                <MaterialIcon
-                  name="info"
-                  className="text-slate-400"
-                />
-
-                <p className="text-xs leading-5 text-slate-500">
-                  Sinkronisasi hanya menulis ke daftar
-                  tugas "DailyFlow" di Google Tasks dan
-                  tidak menyentuh kalender kamu.
-                </p>
-              </div>
-            </div>
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -435,7 +415,7 @@ function ExportSyncPage() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Tiga langkah untuk memindahkan jadwal
+                Tahapan untuk memindahkan jadwal
                 DailyFlow ke Google Tasks.
               </p>
             </div>
@@ -444,7 +424,7 @@ function ExportSyncPage() {
               <Step
                 number="1"
                 title="Hubungkan akun Google"
-                description="Pilih akun Google dan izinkan akses ke Tugas."
+                description="Pilih akun Google dan izinkan akses untuk aplikasi Tasks."
               />
 
               <Step
@@ -456,7 +436,7 @@ function ExportSyncPage() {
               <Step
                 number="3"
                 title="Klik Sinkronkan"
-                description="Aktivitas muncul di daftar tugas DailyFlow pada aplikasi Google Tasks."
+                description="Aktivitas akan muncul di daftar tugas DailyFlow pada aplikasi Google Tasks."
               />
             </div>
           </section>

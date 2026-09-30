@@ -47,12 +47,8 @@ function LoginPage() {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-[#0b1c30]">
-              Selamat Datang di DailyFlow
+              Welcome to DailyFlow
             </h1>
-
-            <p className="mt-3 text-sm leading-6 text-[#565e74]">
-              Rencanakan harimu, kelola waktumu, dan tetap di jalur yang tepat.
-            </p>
           </div>
 
           {/* Login */}

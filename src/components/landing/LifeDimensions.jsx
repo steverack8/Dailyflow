@@ -3,43 +3,36 @@ import MaterialIcon from "../ui/MaterialIcon"
 const dimensions = [
   {
     icon: "laptop_mac",
-    title: "Kerja",
-    description: "Fokus & kolaborasi",
+    title: "Kerja"
   },
   {
     icon: "bedtime",
-    title: "Tidur",
-    description: "Istirahat wajib",
+    title: "Tidur"
   },
   {
     icon: "fitness_center",
-    title: "Olahraga",
-    description: "Kardio, gym, jalan kaki",
+    title: "Olahraga"
   },
   {
     icon: "restaurant",
-    title: "Makan",
-    description: "Nutrisi yang sadar",
+    title: "Makan"
   },
   {
     icon: "self_improvement",
-    title: "Ibadah",
-    description: "Penjangkar spiritual",
+    title: "Ibadah"
   },
   {
     icon: "menu_book",
-    title: "Belajar",
-    description: "Kursus & membaca",
+    title: "Belajar"
   },
   {
     icon: "palette",
-    title: "Hobi",
-    description: "Isi ulang energi kreatif",
+    title: "Hobi"
   },
   {
     icon: "spa",
-    title: "Waktu pribadi",
-    description: "Keluarga & bersantai",
+    title: "Waktu pribadi"
+    
   },
 ]
 
@@ -52,13 +45,11 @@ function LifeDimensions() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-dark">
-            Harimu lebih dari sekadar daftar tugas.
+            Bukan cuma soal pekerjaan. Atur waktu untuk semua yang kamu lakukan.
           </h2>
 
           <p className="mt-3 text-base text-muted">
-            DailyFlow mempertimbangkan berbagai dimensi kehidupan sehari-hari
-            alih-alih memperlakukan harimu seperti daftar tugas yang tak
-            berujung.
+            Atur waktu untuk kerja, tidur, olahraga, makan, belajar, dan hal-hal lain yang ingin kamu lakukan.
           </p>
         </div>
 

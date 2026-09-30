@@ -379,10 +379,6 @@ function DashboardPage() {
       <main className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
         <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 text-sm font-medium text-blue-600">
-              DailyFlow
-            </p>
-
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
               Rutinitas Harian
             </h1>
