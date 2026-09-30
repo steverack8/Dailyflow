@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai"
 
 const model =
-  process.env.GEMINI_MODEL || "gemini-3.6-flash"
+  process.env.GEMINI_MODEL
 
 const analysisSchema = {
   type: "object",
